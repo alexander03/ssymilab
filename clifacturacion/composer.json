@@ -1,0 +1,9 @@
+{
+    "require":{
+        "firebase/php-jwt": "^5.0",
+        "robrichards/xmlseclibs": "^3.0",
+        "anouar/fpdf": "1.0.2",
+        "codeitnowin/barcode": "3.0.2",
+        "econea/nusoap": "^0.9.12"
+    }
+}

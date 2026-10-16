@@ -1,0 +1,17 @@
+@keyframes latidos {
+    from {
+        transform: none;
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+.animation-beats {
+    animation: latidos .5s infinite;
+}

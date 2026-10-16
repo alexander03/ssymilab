@@ -1,0 +1,74 @@
+.mm-active>a {
+    background-color: #f3f8fb;
+    color: #111827 !important;
+}
+
+.mm-active .li-active[aria-expanded="true"] {
+    color: #fff !important;
+}
+
+.mm-active>a>i {
+    color: #111827 !important;
+}
+
+
+#sidebar-menu ul li a i {
+    color: #f3f8fb;
+}
+
+#sidebar-menu ul li a {
+    color: #f3f8fb;
+}
+
+#sidebar-menu ul li a:hover {
+    color: #b6b6b6;
+}
+
+#sidebar-menu ul li a:hover i {
+    color: #b6b6b6;
+}
+
+#sidebar-menu ul li ul.sub-menu li a {
+    color: #b3b4b4;
+}
+
+#sidebar-menu ul li ul.sub-menu li a:hover {
+    color: #949494;
+}
+
+@keyframes loader-rotate {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loader {
+    border-right-color: transparent;
+    animation: loader-rotate 1s linear infinite;
+}
+
+.dropdown-menu-end[style] {
+    left: auto!important;
+    right: 0!important;
+}
+
+.dropdown-menu[style] {
+    right: auto;
+    left: 0;
+}
+.dropdown-menu.show {
+    top: 100%!important;
+}
+
+.select2-selection{
+    border-color: rgba(209, 213, 219, var(--tw-border-opacity)) !important;
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    height: 35px !important;
+}

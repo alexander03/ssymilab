@@ -1,0 +1,16 @@
+<?php
+
+header("Location: ./vista/frmPrincipal.php");
+
+/*
+//print_r(json_decode('{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MDU0MDQxOTYsImV4cCI6MTUwNTQwNDc5NiwiZGF0YSI6eyJpZCI6IjF8MSIsImVtcHJlc2EiOnsiaWRfZW1wcmVzYSI6IjEiLCJub21icmVfZW1wcmVzYSI6IlBST0RVQ1RPUyBDQVVDSE8gTk9SVEUiLCJyYXpvbl9lbXByZXNhIjoiRUlSTCIsInJ1Y19lbXByZXNhIjoiMjAxNTE2ODQ5MjYiLCJtb2RvX2F1dGVudGljYWNpb24iOiJFIiwidXNlcm5hbWVfc3VuYXQiOm51bGwsInBhc3N3b3JkX3N1bmF0IjpudWxsfSwidGVybWluYWwiOnsiaWRfdGVybWluYWwiOiIxIiwiZGlyZWNjaW9uX3Rlcm1pbmFsIjoiOjoxIiwiaWRfZW1wcmVzYSI6IjEifX19.C-hd5M2e2tgrxsXwF2JmAz0a6-AejMwc_b0J60-kxCA"}'));
+
+include_once './wsdl/factura.php';
+//include __DIR__ . "/../vendor/autoload.php";
+//include_once  __DIR__ .'../wsdl/autenticacion.php';
+
+$result =  enviarFactura('{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MDU0MDY1NzIsImV4cCI6MTUwNTQwNjYwMiwiZGF0YSI6eyJpZCI6IjF8MSIsImVtcHJlc2EiOnsiaWRfZW1wcmVzYSI6IjEiLCJub21icmVfZW1wcmVzYSI6IlBST0RVQ1RPUyBDQVVDSE8gTk9SVEUiLCJyYXpvbl9lbXByZXNhIjoiRUlSTCIsInJ1Y19lbXByZXNhIjoiMjAxNTE2ODQ5MjYiLCJtb2RvX2F1dGVudGljYWNpb24iOiJFIiwidXNlcm5hbWVfc3VuYXQiOm51bGwsInBhc3N3b3JkX3N1bmF0IjpudWxsfSwidGVybWluYWwiOnsiaWRfdGVybWluYWwiOiIxIiwiZGlyZWNjaW9uX3Rlcm1pbmFsIjoiOjoxIiwiaWRfZW1wcmVzYSI6IjEifX19.8jOfiXVR5jneatUeIZgF_sCLn_AHN4If-mmx65cwmZI","comprobante":{"numerofactura":"F001-4355","fechaemision":"2012-03-14","usuario":"Servicabinas S.A.","ruc":"20587896411","detalles":[{"numeroxitem":"1","unidadmedida":"NIU","cantidad":"2000","codigo":"GLG199","descripcion":"Grabadora LG Externo Modelo: GE20LU10","valorunitarioxitem":"83.05","precioventaunitarioxitem":"98.00","afectacionxitem":"10","igvxitem":"26908.47","iscxitem":"","valorventaxitem":"149491.53"},{"numeroxitem":"2","unidadmedida":"NIU","cantidad":"300","codigo":"MVS546","descripcion":"Monitor LCD ViewSonic VG2028WM 20\"","valorunitarioxitem":"525.42","precioventaunitarioxitem":"620.00","afectacionxitem":"10","igvxitem":"24116.95","iscxitem":"","valorventaxitem":"133983.05"},{"numeroxitem":"3","unidadmedida":"NIU","cantidad":"250","codigo":"MPC35","descripcion":"Memoria DDR-3 B1333 Kingston","valorunitarioxitem":"52.00","precioventaunitarioxitem":"52.00","afectacionxitem":"20","igvxitem":"0.00","iscxitem":"","valorventaxitem":"13000.00"},{"numeroxitem":"4","unidadmedida":"NIU","cantidad":"500","codigo":"TMS22","descripcion":"Teclado Microsoft SideWinder X6","valorunitarioxitem":"166.10","precioventaunitarioxitem":"196.00","afectacionxitem":"10","igvxitem":"14949.15","iscxitem":"","valorventaxitem":"83050.85"},{"numeroxitem":"5","unidadmedida":"NIU","cantidad":"1","codigo":"WCG01","descripcion":"Web cam Genius iSlim 310","valorunitarioxitem":"30.00","precioventaunitarioxitem":"0.00","afectacionxitem":"31","igvxitem":"0.00","iscxitem":"","valorventaxitem":"0.00"}],"totaloperacionesgravadas":"348199.15","totaloperacionesinafectas":"","totaloperacionesexoneradas":"12350.00","totaloperacionesgratuitas":"30.00","totaligv":"62675.85","totalisc":"","totalotrostributos":"","totalotroscargos":"","moneda":"PEN"}}');
+$result = json_decode($result);
+print_r($result);
+//echo $result;
+//echo getAutorizacion("sistemas20");*/

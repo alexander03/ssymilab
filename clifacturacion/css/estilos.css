@@ -1,0 +1,560 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    font-family: 'Comfortaa', cursive;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+main div.index1{
+    padding-top: 80px;
+    padding-bottom: 80px;
+    background: -webkit-linear-gradient(#1F3266, #3658B2); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#1F3266, #3658B2); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#1F3266, #3658B2); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#1F3266, #3658B2);
+}
+
+main div.index1 p{
+    color: white;
+    font-weight: 300;
+    font-size: 1.5rem;
+}
+
+main div.index1 p.inverso{
+    color: #4B527C;
+}
+
+main div.index1 h1{
+    color: white;
+    font-weight: 300;
+}
+
+main div.index1 h2{
+    color: white;
+    font-weight: 200;
+}
+
+.parallax-container {
+    height: 500px;
+}
+
+.nav-wrapper, footer.page-footer{
+    /*background-color: #9E1D12;*/
+    background-color: #1A5D99;
+}
+
+.nav-wrapper a, footer a{
+    color: white;
+}
+
+.nav-wrapper a.btn{
+    background-color: #183546;
+    color: white;
+}
+
+.side-nav{
+    background-color: #183546;
+}
+
+.side-nav li > a, .side-nav .subheader, .side-nav li > a > i, .side-nav li > a > i.material-icons{
+    color: white;
+}
+
+.brand-logo{
+    
+}
+
+.pointer{
+    cursor: pointer;
+}
+
+footer.white p, footer.white h5, footer.white div, footer.white a{
+    color: #4B527C !important;
+}
+
+.redondear{
+  border-radius: 20px;
+}
+
+.brand-logo{
+    font-weight: bolder;
+}
+
+#modDetallesTabla .modal-content, .modalDetalles .modal-content, .modalFormulario .modal-content, #modDetalleFactura .modal-content{
+    padding: 0px;
+}
+
+#modDetallesTabla, .modalDetalles, .modalFormulario, #modDetalleFactura{
+    margin-top: 0px;
+    background-color: #183546;
+}
+
+#modDetallesTabla .Header, .modalDetalles .Header, .modalFormulario .Header, #modDetalleFactura .Header{
+    margin: 0px;
+    padding: 10px;
+    border-bottom-style: solid;
+    border-bottom-color: #9E1D12;
+}
+
+#modDetallesTabla .Header h2, .modalDetalles .Header h2, .modalFormulario .Header h2, #modDetalleFactura .Header h2{
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: white;
+    margin: 0px;
+}
+
+#modDetallesTabla .Content, .modalDetalles .Content, .modalFormulario .Content, #modDetalleFactura .Content{
+    padding: 20px 20px 5px 20px;
+    margin: 0px;
+}
+
+#modDetallesTabla .Content table, .modalDetalles .Content table, .modalFormulario .Content table, #modDetalleFactura .Content table{
+    color: #4B527C;
+    padding: 25px;
+}
+
+table tr.active{
+    background-color: #99CCFC !important;
+}
+
+#modDetallesTabla .Content table tr:nth-child(even){
+    background-color: #E3F2FD;
+}
+
+#modDetallesTabla .Content table tr:nth-child(odd){
+    background-color: white;
+}
+
+#modDetallesTabla .Content table tr td:nth-child(1){
+    color: white;
+    background-color: #4B527C;
+    font-weight: 900;
+    width: 33%;
+}
+
+.boton-close{
+    transform: scale(0.5);
+    margin-top: -10px;
+    margin-right: -10px;
+}
+
+@media only screen and (max-width: 600px) {
+    #iniciarsesion{
+        width: 100%;
+        min-height: 500px;
+        top:0px !important;
+    }
+    #modDetallesTabla{
+        width: 100%;
+        top: 0px !important;
+        min-height: 100%;
+    }
+    .logo-barra{
+        width: 55px;
+        height: auto;
+        z-index: 2;
+    }
+    .brand-logo{
+        font-size: 1.5rem !important;
+    }
+    #modDetallesTabla{
+        
+    }
+    #modTasasDetalle{
+        width: 100%;
+    }
+    .boton-close{
+        transform: scale(1);
+        margin-top: 0px;
+        margin-right: 0px;
+    }
+    #modDetalleFactura{
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 601px) and (max-width: 992px) {
+    #iniciarsesion{
+        width: 60%;
+        max-height: 430px;
+    }
+    .logo-barra{
+        width: 62.031px;
+        height: 61.914px;
+    }
+    #modDetallesTabla{
+        
+    }
+    #modTasasDetalle{
+        width: 95%;
+    }
+    #modDetalleFactura{
+        width: 60%;
+    }
+}
+
+@media only screen and (min-width: 993px) and (max-width: 1200px) {
+    #iniciarsesion{
+        width: 35%;
+        max-height: 410px;
+    }
+    .logo-barra{
+        width: 62.031px;
+        height: auto;
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+    #modDetallesTabla{
+        
+    }
+    #modTasasDetalle{
+        width: 90%;
+    }
+    #modDetalleFactura{
+        width: 40%;
+    }
+}
+
+@media only screen and (min-width: 1201px){
+    #iniciarsesion{
+        width: 25%;
+        max-height: 410px;
+    }
+    .logo-barra{
+        width: 62.031px;
+        height: auto;
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+    #modTasasDetalle{
+        width: 85%;
+    }
+    #modDetalleFactura{
+        width: 30%;
+    }
+}
+
+.modal.modal-fixed-footer .modal-content{
+    height: 100%;
+}
+
+.main_principal{
+    background: -webkit-linear-gradient(#183546, #183546); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#183546, #183546); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#183546, #183546); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#183546, #183546);
+}
+
+.row.titulo {
+    padding-top: 5px;
+    background-color: #9E1D12;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.row.contenido{
+    background-color: white;
+    color: #183546;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+#lstSecuencia{
+    background-color: #B85A52;
+    padding-left: 10px;
+}
+
+#lstSecuencia a{
+    font-weight: 300;
+    color: white;
+    text-transform: uppercase;
+}
+#lstSecuencia .breadcrumb:last-child{
+    font-weight: 900;
+}
+#lstSecuencia .breadcrumb:before{
+    color: #4B527C;
+}
+
+.contenido_principal{
+    padding: 10px;
+}
+
+.pagination li a{
+    color: #183546;
+}
+
+.pagination li a.disabled{
+    color: #8c9eff;
+}
+
+.pagination li.active{
+    background-color: #183546;
+}
+
+.pagination li.active a{
+    color: white;
+}
+
+.fixed-action-btn i,.fixed-action-btn.toolbar ul li a{
+    color: #4B527C;
+}
+
+.btn-submit{
+    background-color: #183546;
+    color: white;
+    font-weight: 700;
+}
+
+.btn-submit:hover{
+    background-color: #9E1D12;
+}
+
+.btn-submit i{
+    color: white;
+}
+
+.toast{
+    margin-top: 0px;
+    background-color: #183546;
+    color: white;
+}
+
+.toastHeader{
+    margin: 0px;
+    padding: 10px;
+    border-bottom-style: solid;
+    border-bottom-color: #9E1D12;
+}
+
+.toastHeader h2{
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: white;
+    margin: 0px;
+}
+
+.toastContent{
+    padding: 0px 20px 5px 20px;
+    margin: 0px;
+}
+
+.toastContent p{
+    color: white;
+    word-break: break-word;
+}
+
+.btnToastAceptar{
+    margin-left: 0px;
+    background-color: #4caf50;
+}
+
+.btnToastAceptar:hover{
+    background-color: #1b5e20;
+}
+
+.btnToastCancelar{
+    margin-left: 0px;
+    background-color: #f44336;
+}
+
+.btnToastCancelar:hover{
+    background-color: #b71c1c;
+}
+
+.divPersonal{
+    background-color: #BCCEFF;
+}
+
+.autocomplete-content2{
+    position: absolute !important;
+    width: 100% !important;
+}
+
+.autocomplete-content3{
+    position: absolute !important;
+    min-width: 450px !important;
+}
+
+input:-moz-read-only { /* For Firefox */
+    background-color: #ffcdd2;
+}
+
+input:read-only, .select-wrapper input.select-dropdown:disabled{ 
+    background-color: #ffcdd2;
+    color: inherit;
+}
+
+input.autocomplete{
+    background-color: transparent;
+}
+
+input{
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+.tabs{
+    overflow-x: hidden;
+}
+
+.tabs .tab a{
+    color: white;
+    background-color: #B85A52;
+}
+
+.tabs .tab a:hover, .tabs .tab a.active{
+    color: white;
+    background-color: #9E1D12;
+}
+
+.borderTitutlo{
+    border-style: solid;
+    border-color: #000;
+    border-width: 2px;
+}
+
+.borderTitutlo label.tituloDiv{
+    margin-top: -20px;
+    position: absolute;
+    /*margin-left: -13px;*/
+    color: black;
+    font-size: 1rem;
+    font-weight: bolder;
+}
+
+.Factura{
+    padding-top: 20px !important;
+}
+
+.Factura .razonSocialCabecera{
+    font-size: 1.6rem;
+    color: black;
+    font-weight: bold;
+}
+
+.Factura .dirCabecera{
+    font-weight: bold;
+}
+
+.Factura .fechaCabecera{
+    font-size: 1.2rem;
+}
+
+.Factura .datosEmisor{
+    border: solid #000 1px;
+    border-radius: 5px;
+}
+
+.Factura .rucCabecera{
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bolder;
+}
+
+.Factura .tipoDocCabecera{
+    color: black;
+    font-size: 1.9rem;
+}
+
+.Factura .numCabecera{
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bolder;
+}
+
+.Factura .input-field input{
+    color: black;
+    text-transform: uppercase;
+    font-family: sans-serif;
+}
+
+.Factura .input-field label{
+    color: black;
+}
+
+.Factura .codigoCuerpo{
+    max-width: 100px;
+}
+
+.Factura .codigoCuerpo input{
+    text-align: center;
+}
+
+.Factura .cantidadCuerpo{
+    max-width: 110px;
+}
+
+.Factura .cantidadCuerpo input{
+    text-align: center;
+    font-size: 1.3rem;
+}
+
+.Factura .descrpCuerpo{
+    min-width: 450px;
+}
+
+.Factura .descrpCuerpo input{
+    text-align: left;
+}
+
+.Factura .precioCuerpo{
+    max-width: 110px;
+}
+
+.Factura .precioCuerpo input{
+    text-align: right;
+    font-size: 1.3rem;
+}
+
+.Factura .subtotalCuerpo{
+    padding-right: 10px;
+    max-width: 110px;
+    text-align: right;
+    font-size: 1.3rem;
+}
+
+.Factura .detallesCuerpo thead {
+    background-color: #1A5D99;
+    color: white;
+}
+
+.Factura .detallesCuerpo td{
+    padding-top: 0px;
+    padding-bottom: 0px;
+    border: 0px;
+}
+
+.Factura .material-icons{
+    font-size: 2rem;
+    font-weight: bolder;
+    cursor: pointer;
+    color: black;
+}
+
+.Factura .material-icons:hover{
+    color: red;
+}
+
+.Factura .Documentos h6{
+    color: black;
+    font-size: 1.5rem;
+    font-weight: bolder;
+}
+
+.Factura .Documentos .detallesDocumentos thead{
+    background-color: #1A5D99;
+    color: white;
+}
+
+.Factura .Opciones h6{
+    color: black;
+    font-size: 1.5rem;
+    font-weight: bolder;
+}
