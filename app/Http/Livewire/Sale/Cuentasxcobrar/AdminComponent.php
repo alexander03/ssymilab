@@ -8,6 +8,7 @@ use App\Models\MenuOption;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use App\Models\BranchOffice;
+use App\Models\Zone;
 use Livewire\WithPagination;
 
 class AdminComponent extends Component
@@ -22,6 +23,8 @@ class AdminComponent extends Component
     public $date_start, $date_end, $number, $client, $status_sale;
     public $branch_office_id = "";
     public $branch_office;
+    public $zone_id = "";
+    public $zones;
 
     public $rows = '10';
 
@@ -35,6 +38,7 @@ class AdminComponent extends Component
         'date_end' => ['except' => ''],
         'number' => ['except' => ''],
         'client' => ['except' => ''],
+        'zone_id' => ['except' => ''],
         'rows' => ['except' => '10']
     ];
 
@@ -46,6 +50,7 @@ class AdminComponent extends Component
         $this->search_event = "search-installment";
         $this->status_sale = "";
         $this->branch_office = BranchOffice::orderBy('name','asc')->get();
+        $this->zones = Zone::orderBy('name','asc')->get();
     }
 
     public function updatingDateStart($value)
@@ -64,6 +69,11 @@ class AdminComponent extends Component
     }
 
     public function updatingSupplier($value)
+    {
+        $this->resetPage();
+    }
+
+    public function updatingZoneId($value)
     {
         $this->resetPage();
     }
@@ -96,7 +106,7 @@ class AdminComponent extends Component
         $this->rows = (intval($this->rows) == 0) ? 10 : $this->rows;
 
         $list_items = [];
-        $list_items = $this->search_payments($this->branch_office_id,$this->date_start,$this->date_end,$this->number,$this->client, 4, $this->sort, $this->direction, $this->rows, $this->status_sale);
+        $list_items = $this->search_payments($this->branch_office_id,$this->date_start,$this->date_end,$this->number,$this->client, 4, $this->sort, $this->direction, $this->rows, $this->status_sale, $this->zone_id);
 
 
         return view('livewire.sale.cuentasxcobrar.admin-component')->with(compact('thead', 'list_items', 'arr_actions'));

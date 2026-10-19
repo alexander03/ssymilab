@@ -34,6 +34,8 @@ class MantComponent extends Component
     public $modal_supplier = false;
 
     public $client_id, $currency_id, $number, $date_time, $total, $comment;
+    public $type = "C";
+    public $allowed_payment_types = ['C', 'D'];
 
     public $branch_office;
     public $supplier;
@@ -72,6 +74,7 @@ class MantComponent extends Component
             $this->client_id = $this->order->client_id;
             $this->currency_id = $this->order->currency_id;
             $this->total = $this->order->total;
+            $this->type = $this->order->type;
             $this->comment = (array_key_exists('comment', $details)) ? $details["comment"] : "";
             $this->number = $this->order->number;
             $this->date_time = date_format(new \DateTime($this->order->date_time), 'Y-m-d');
@@ -139,10 +142,33 @@ class MantComponent extends Component
         $this->load_actions();
         $arr_actions = $this->arr_actions;
 
+        $this->sync_payment_types();
+
         $person = new Person();
         $role_id = Role::where('code', 'P')->first()->id;
         $this->search_products();
         return view('livewire.sale.order.mant-component')->with(compact('person', 'role_id', 'arr_actions'));
+    }
+
+    //FORMAS DE PAGO PERMITIDAS SEGUN EL CLIENTE SELECCIONADO (SIN CLIENTE = AMBAS)
+    private function sync_payment_types(){
+        $client = (isset($this->supplier["id"]) && $this->supplier["id"] != "") ? Person::find($this->supplier["id"]) : null;
+        $this->allowed_payment_types = $client ? $client->getAllowedPaymentTypes() : ['C', 'D'];
+        if(!in_array($this->type, $this->allowed_payment_types)){
+            $this->type = $this->allowed_payment_types[0];
+        }
+    }
+
+    private function validate_payment_type(){
+        $client = (isset($this->supplier["id"]) && $this->supplier["id"] != "") ? Person::find($this->supplier["id"]) : null;
+        if($client && !in_array($this->type, $client->getAllowedPaymentTypes())){
+            $this->emit('alert-error', [
+                'title' => 'Error!',
+                'text' => 'La forma de pago no está permitida para este cliente.',
+            ]);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -340,6 +366,9 @@ class MantComponent extends Component
      */
     public function save($comment){
         $this->comment = $comment;
+        if(!$this->validate_payment_type()){
+            return true;
+        }
         // Validator::make(
         //     $this->inputs_validation(),
         //     $form_request->rules(),
@@ -402,6 +431,9 @@ class MantComponent extends Component
      */
     public function update($comment){
         $this->comment = $comment;
+        if(!$this->validate_payment_type()){
+            return true;
+        }
         DB::beginTransaction();
         try {
 
@@ -454,7 +486,7 @@ class MantComponent extends Component
             "comment" => $this->comment ? $this->comment : ""
         ];
         return [
-            "type" => "C",
+            "type" => $this->type,
             'client_id' => $this->supplier["id"],
             'user_id' => Auth::user()->id,
             "currency_id" => $this->currency_id,
@@ -473,6 +505,7 @@ class MantComponent extends Component
             "comment" => $this->comment ? $this->comment : ""
         ];
         return [
+            "type" => $this->type,
             'client_id' => $this->supplier["id"],
             'user_id' => Auth::user()->id,
             'branch_office_id' => Auth::user()->branch_office_id,

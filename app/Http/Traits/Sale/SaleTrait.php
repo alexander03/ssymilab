@@ -12,7 +12,7 @@ use App\Models\DocumentPayment;
 
 trait SaleTrait
 {
-    public function search_sales($date_start, $date_end, $document_type_id, $number, $supplier, $vendedor, $status, $supervisor, $sort, $direction, $rows)
+    public function search_sales($date_start, $date_end, $document_type_id, $number, $supplier, $vendedor, $status, $supervisor, $sort, $direction, $rows, $zone_id = null)
     {
         $date_start = Libreria::getParam($date_start);
         $date_end = Libreria::getParam($date_end);
@@ -31,6 +31,7 @@ trait SaleTrait
                 DB::raw("(CASE WHEN person.type = '1' THEN CONCAT(person.surname_father,' ',person.surname_mother,' ', person.name) ELSE person.business_name END) AS person_name"),
                 DB::raw("(CASE WHEN supervisor.type = '1' THEN CONCAT(supervisor.surname_father,' ',supervisor.surname_mother,' ', supervisor.name) ELSE supervisor.business_name END) AS supervisor_name")
             );
+        $list = $this->filter_zone($list, $zone_id);
         $list = $list->orderBy($sort, $direction);
         $list = $list->paginate($rows);
 
@@ -54,14 +55,17 @@ trait SaleTrait
         })->toArray();
     }
 
-    public function getNextNumberSale($document_type_id) : string
+    public function getNextNumberSale($document_type_id, $detraccion = false) : string
     {
         $user = Auth::user();
 
+        //FACTURA CON DETRACCION: SERIE SIGUIENTE (FF01->FF02, F002->F003)
+        $con_detraccion = $detraccion && $document_type_id == 13;
+
         if($user->branch_office_id==2){//PRINCIPAL
-            $serie = "F01" . "-";
+            $serie = ($con_detraccion ? "F02" : "F01") . "-";
         }else{
-            $serie = "002" . "-";
+            $serie = ($con_detraccion ? "003" : "002") . "-";
         }
 
 
@@ -97,7 +101,19 @@ trait SaleTrait
         return $serie . "00000001";
     }
 
-    public function search_payments($branch_office_id,$date_start, $date_end, $number, $supplier,$module_id, $sort, $direction, $rows, $status = null)
+    //ZONA DEL CLIENTE: "" = TODAS, "0" = SIN ZONA, OTRO = ID DE ZONA
+    private function filter_zone($list, $zone_id)
+    {
+        if(is_null($zone_id) || $zone_id === ""){
+            return $list;
+        }
+        if($zone_id == "0"){
+            return $list->whereNull('people.zone_id');
+        }
+        return $list->where('people.zone_id', $zone_id);
+    }
+
+    public function search_payments($branch_office_id,$date_start, $date_end, $number, $supplier,$module_id, $sort, $direction, $rows, $status = null, $zone_id = null)
     {
         $date_start = Libreria::getParam($date_start);
         $date_end = Libreria::getParam($date_end);
@@ -105,11 +121,21 @@ trait SaleTrait
         $supplier = Libreria::getParam($supplier);
         $user = Auth::user();
         $list = DocumentPayment::search($date_start, $date_end, $number, $supplier, $status, $branch_office_id, $module_id)
+            ->leftJoin('zones', 'zones.id', '=', 'people.zone_id')
+            ->leftJoin(DB::raw('people as seller'), 'seller.id', '=', 'people.supervisor_id')
             ->select(
                 "document_payments.*",
                 DB::raw("(CASE WHEN people.type = '1' THEN CONCAT(people.surname_father,' ',people.surname_mother,' ', people.name) ELSE people.business_name END) AS supplier_name"),
                 DB::raw("(CASE WHEN people.type = '1' THEN people.dni ELSE people.ruc END) AS supplier_document"),
+                "people.id AS client_group_id",
+                "people.zone_id AS client_zone_id",
+                DB::raw("COALESCE(zones.name, 'SIN ZONA') AS zone_name"),
+                DB::raw("(CASE WHEN seller.type = '1' THEN CONCAT(seller.surname_father,' ',seller.surname_mother,' ', seller.name) ELSE seller.business_name END) AS seller_name"),
             );
+        $list = $this->filter_zone($list, $zone_id);
+        //AGRUPADO POR ZONA ("SIN ZONA" AL FINAL) Y DENTRO POR CLIENTE,
+        //CLIENTES ORDENADOS POR SU VENDEDOR ASIGNADO (SIN VENDEDOR AL FINAL) Y LUEGO POR NOMBRE
+        $list = $list->orderByRaw('zones.name IS NULL, zones.name, zones.id, seller.id IS NULL, seller_name, supplier_name, people.id');
         $list = $list->orderBy($sort, $direction);
         $list = $list->paginate($rows);
 

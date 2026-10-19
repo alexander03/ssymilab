@@ -51,6 +51,16 @@
                     </x-general.select>
                 </div>
                 <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
+                    <label for="zone_id" class="font-semibold text-gray-600">Zona: </label>
+                    <x-general.select id="zone_id" wire:model.defer="zone_id" wire:change="$refresh">
+                        <option value="">TODAS</option>
+                        @foreach ($zones as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                        @endforeach
+                        <option value="0">SIN ZONA</option>
+                    </x-general.select>
+                </div>
+                <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
                     <label for="rows" class="font-semibold text-gray-600">Filas a Mostrar: </label>
                     <x-general.select id="rows" name="rows" wire:model.defer="rows" wire:change="$refresh">
                         <option value="10">10</option>
@@ -64,19 +74,19 @@
     <x-general.card-table>
         <x-slot name="head">
             @if (in_array('pdf-vendedor', $arr_actions))
-            <a href="#" onclick="window.open('{{ route('pdf-debts-to-cash2') }}?client='+$('#client').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&status_sale='+$('#status_sale').val()+'&branch_office_id={{$this->branch_office_id}}','_blank')" >
+            <a href="#" onclick="window.open('{{ route('pdf-debts-to-cash2') }}?client='+$('#client').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&status_sale='+$('#status_sale').val()+'&zone_id='+$('#zone_id').val()+'&branch_office_id={{$this->branch_office_id}}','_blank')" >
                 <x-general.button class="bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 rounded-md mr-2" >
                     <i class="fas fa-file-pdf" aria-hidden="true"></i> {{ __(' PDF VENDEDOR') }}
                 </x-general.button>
             </a>
             @endif
             @if (in_array('pdf', $arr_actions))
-            <a href="#" onclick="window.open('{{ route('pdf-debts-to-cash') }}?client='+$('#client').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&status_sale='+$('#status_sale').val()+'&branch_office_id={{$this->branch_office_id}}','_blank')" >
+            <a href="#" onclick="window.open('{{ route('pdf-debts-to-cash') }}?client='+$('#client').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&status_sale='+$('#status_sale').val()+'&zone_id='+$('#zone_id').val()+'&branch_office_id={{$this->branch_office_id}}','_blank')" >
                 <x-general.button class="bg-red-600 text-white hover:bg-red-700 active:bg-red-800 rounded-md mr-2" >
                     <i class="fas fa-file-pdf" aria-hidden="true"></i> {{ __(' PDF') }}
                 </x-general.button>
             </a>
-            <a href="#" onclick="window.open('{{ route('excel-debts-to-cash') }}?client='+$('#client').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&status_sale='+$('#status_sale').val()+'&branch_office_id={{$this->branch_office_id}}','_blank')" >
+            <a href="#" onclick="window.open('{{ route('excel-debts-to-cash') }}?client='+$('#client').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&status_sale='+$('#status_sale').val()+'&zone_id='+$('#zone_id').val()+'&branch_office_id={{$this->branch_office_id}}','_blank')" >
                 <x-general.button class="bg-green-600 text-white hover:bg-green-700 active:bg-green-800 rounded-md mr-2" >
                     <i class="fas fa-file-excel" aria-hidden="true"></i> {{ __(' EXCEL') }}
                 </x-general.button>
@@ -101,10 +111,72 @@
                         <x-general.table :thead="$thead" :sort="$sort" :direction="$direction">
                             @php
                                 $init = $list_items->firstItem() - 1;
+                                $zone_group = false;
+                                $zone_name = "";
+                                $zone_amount = 0;
+                                $zone_pending = 0;
+                                $client_group = false;
+                                $client_name = "";
+                                $client_amount = 0;
+                                $client_pending = 0;
+                                $page_amount = 0;
+                                $page_pending = 0;
                             @endphp
                             @foreach ($list_items as $item)
                                 @php
                                     $init = $init + 1;
+                                    $item_pending = $item->total_amount - $item->cash_amount - $item->card_amount - $item->transfer_amount;
+                                    $new_zone = ($zone_group === false || $zone_group !== $item->client_zone_id);
+                                    $new_client = ($new_zone || $client_group !== $item->client_group_id);
+                                @endphp
+                                {{-- CIERRE DEL CLIENTE ANTERIOR (Y DE LA ZONA SI CAMBIA) --}}
+                                @if ($new_client && $client_group !== false)
+                                    <tr class="bg-gray-50">
+                                        <td colspan="6" class="px-6 py-2 text-right text-xs text-gray-600 font-bold">SUBTOTAL {{ $client_name }}</td>
+                                        <td class="px-6 py-2 text-center text-xs text-gray-600 font-bold">{{ number_format($client_amount, 2, '.', '') }}</td>
+                                        <td class="px-6 py-2 text-center text-xs text-gray-600 font-bold">{{ number_format($client_pending, 2, '.', '') }}</td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                @endif
+                                @if ($new_zone && $zone_group !== false)
+                                    <tr class="bg-gray-100">
+                                        <td colspan="6" class="px-6 py-2 text-right text-sm text-gray-700 font-bold">SUBTOTAL ZONA {{ $zone_name }}</td>
+                                        <td class="px-6 py-2 text-center text-sm text-gray-700 font-bold">{{ number_format($zone_amount, 2, '.', '') }}</td>
+                                        <td class="px-6 py-2 text-center text-sm text-gray-700 font-bold">{{ number_format($zone_pending, 2, '.', '') }}</td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                @endif
+                                @if ($new_zone)
+                                    @php
+                                        $zone_group = $item->client_zone_id;
+                                        $zone_name = $item->zone_name;
+                                        $zone_amount = 0;
+                                        $zone_pending = 0;
+                                    @endphp
+                                    <tr class="bg-blue-50">
+                                        <td colspan="11" class="px-6 py-2 text-left text-sm text-blue-800 font-bold">ZONA: {{ $zone_name }}</td>
+                                    </tr>
+                                @endif
+                                @if ($new_client)
+                                    @php
+                                        $client_group = $item->client_group_id;
+                                        $client_name = $item->supplier_name;
+                                        $client_amount = 0;
+                                        $client_pending = 0;
+                                    @endphp
+                                    <tr class="bg-gray-50">
+                                        <td colspan="11" class="px-6 py-2 text-left text-xs text-gray-700 font-bold">
+                                            CLIENTE: {{ $item->supplier_name }} ({{ $item->supplier_document }}) &nbsp;|&nbsp; VENDEDOR: {{ $item->seller_name ? $item->seller_name : 'SIN VENDEDOR' }}
+                                        </td>
+                                    </tr>
+                                @endif
+                                @php
+                                    $client_amount += $item->total_amount;
+                                    $client_pending += $item_pending;
+                                    $zone_amount += $item->total_amount;
+                                    $zone_pending += $item_pending;
+                                    $page_amount += $item->total_amount;
+                                    $page_pending += $item_pending;
                                 @endphp
                                 <tr>
                                     <td class="px-6 py-4 w-4 text-center text-sm text-gray-500">
@@ -192,6 +264,24 @@
                                     @endif
 
                             @endforeach
+                            <tr class="bg-gray-50">
+                                <td colspan="6" class="px-6 py-2 text-right text-xs text-gray-600 font-bold">SUBTOTAL {{ $client_name }}</td>
+                                <td class="px-6 py-2 text-center text-xs text-gray-600 font-bold">{{ number_format($client_amount, 2, '.', '') }}</td>
+                                <td class="px-6 py-2 text-center text-xs text-gray-600 font-bold">{{ number_format($client_pending, 2, '.', '') }}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                            <tr class="bg-gray-100">
+                                <td colspan="6" class="px-6 py-2 text-right text-sm text-gray-700 font-bold">SUBTOTAL ZONA {{ $zone_name }}</td>
+                                <td class="px-6 py-2 text-center text-sm text-gray-700 font-bold">{{ number_format($zone_amount, 2, '.', '') }}</td>
+                                <td class="px-6 py-2 text-center text-sm text-gray-700 font-bold">{{ number_format($zone_pending, 2, '.', '') }}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                            <tr class="bg-gray-200">
+                                <td colspan="6" class="px-6 py-2 text-right text-sm text-gray-800 font-bold">TOTAL PÁGINA</td>
+                                <td class="px-6 py-2 text-center text-sm text-gray-800 font-bold">{{ number_format($page_amount, 2, '.', '') }}</td>
+                                <td class="px-6 py-2 text-center text-sm text-gray-800 font-bold">{{ number_format($page_pending, 2, '.', '') }}</td>
+                                <td colspan="3"></td>
+                            </tr>
                         </x-general.table>
                     </div>
 

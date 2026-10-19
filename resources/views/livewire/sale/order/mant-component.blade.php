@@ -70,6 +70,20 @@
                                     <x-jet-input-error for="currency_id" />
                                 </div>
                             </div>
+                            <div class="col-span-12 sm:col-span-4">
+                                <div class="py-1">
+                                    <x-jet-label for="type" class="font-semibold text-gray-600">Forma de pago: </x-jet-label>
+                                    <x-general.select name="type" wire:model="type">
+                                        @if (in_array('C', $allowed_payment_types))
+                                        <option value="C"> CONTADO </option>
+                                        @endif
+                                        @if (in_array('D', $allowed_payment_types))
+                                        <option value="D"> CREDITO </option>
+                                        @endif
+                                    </x-general.select>
+                                    <x-jet-input-error for="type" />
+                                </div>
+                            </div>
                         </div>
                         <div class="col-span-12">
                             <div wire:ignore   class="py-1">

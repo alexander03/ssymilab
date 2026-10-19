@@ -25,8 +25,22 @@ class Person extends Model
 	    'code',
         'shipping_person',
         'shipping_person_dni',
-        'supervisor_id', 
+        'supervisor_id',
+        'zone_id',
+        'payment_types',
     ];
+
+    public function zone(){
+        return $this->belongsTo(Zone::class);
+    }
+
+    //FORMAS DE PAGO PERMITIDAS (C = CONTADO, D = CREDITO); SIN VALOR = AMBAS
+    public function getAllowedPaymentTypes(){
+        if(is_null($this->payment_types) || trim($this->payment_types) == ""){
+            return ['C', 'D'];
+        }
+        return explode(',', $this->payment_types);
+    }
 
     public function roles(){
         return $this->belongsToMany(Role::class, 'person_roles', 'person_id', 'role_id')->orderBy('roles.name', 'ASC');

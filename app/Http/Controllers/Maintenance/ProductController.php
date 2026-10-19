@@ -108,6 +108,14 @@ class ProductController extends Controller
         return $pdf->stream("product-list.pdf");
     }
 
+    //MISMOS FILTROS QUE EL PDF; UNA FILA POR UNIDAD CON PRECIOS Y % DE GANANCIA
+    public function excel($id,Request $request)
+    {
+        $lista = $this->search_products($request->input('type'), $request->input('name'), $request->input('category_id'), $request->input('brand_id'), $request->input('supplier_id'), $request->input('status_product'), "products.name","asc", 100000);
+
+        return view("{$this->directory}.excel")->with(compact('lista'));
+    }
+
         /**
      * Show the form for editing the specified resource.
      *

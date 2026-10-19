@@ -55,6 +55,16 @@
         <tbody>
             @php
                 $init = 0;
+                $zone_group = false;
+                $zone_name = "";
+                $zone_amount = 0;
+                $zone_pending = 0;
+                $client_group = false;
+                $client_name = "";
+                $client_amount = 0;
+                $client_pending = 0;
+                $total_amount = 0;
+                $total_pending = 0;
             @endphp
             @foreach ($lista as $key => $item)
             @php
@@ -65,7 +75,59 @@
                     $color="";
                 }
                 if(!is_null($item->document)){
+                    $item_pending = ($item->status == "P") ? ($item->total_amount - $item->cash_amount - $item->card_amount - $item->transfer_amount) : 0;
+                    $new_zone = ($zone_group === false || $zone_group !== $item->client_zone_id);
+                    $new_client = ($new_zone || $client_group !== $item->client_group_id);
             @endphp
+                {{-- CIERRE DEL CLIENTE ANTERIOR (Y DE LA ZONA SI CAMBIA) --}}
+                @if ($new_client && $client_group !== false)
+                    <tr>
+                        <td colspan="5" style="text-align: right; font-weight: bold;">SUBTOTAL {{ $client_name }}</td>
+                        <td style="font-weight: bold;">S/ {{ number_format($client_amount, 2, '.', '') }}</td>
+                        <td colspan="2"></td>
+                        <td style="font-weight: bold;">S/ {{ number_format($client_pending, 2, '.', '') }}</td>
+                        <td></td>
+                    </tr>
+                @endif
+                @if ($new_zone && $zone_group !== false)
+                    <tr>
+                        <th colspan="5" style="text-align: right;">SUBTOTAL ZONA {{ $zone_name }}</th>
+                        <th>S/ {{ number_format($zone_amount, 2, '.', '') }}</th>
+                        <th colspan="2"></th>
+                        <th>S/ {{ number_format($zone_pending, 2, '.', '') }}</th>
+                        <th></th>
+                    </tr>
+                @endif
+                @if ($new_zone)
+                    @php
+                        $zone_group = $item->client_zone_id;
+                        $zone_name = $item->zone_name;
+                        $zone_amount = 0;
+                        $zone_pending = 0;
+                    @endphp
+                    <tr>
+                        <th colspan="10" style="text-align: left; background-color: #e5e7eb;">ZONA: {{ $zone_name }}</th>
+                    </tr>
+                @endif
+                @if ($new_client)
+                    @php
+                        $client_group = $item->client_group_id;
+                        $client_name = $item->supplier_name;
+                        $client_amount = 0;
+                        $client_pending = 0;
+                    @endphp
+                    <tr>
+                        <td colspan="10" style="text-align: left; font-weight: bold; background-color: #f3f4f6;">CLIENTE: {{ $item->supplier_name }} ({{ $item->supplier_document }}) | VENDEDOR: {{ $item->seller_name ? $item->seller_name : 'SIN VENDEDOR' }}</td>
+                    </tr>
+                @endif
+                @php
+                    $client_amount += $item->total_amount;
+                    $client_pending += $item_pending;
+                    $zone_amount += $item->total_amount;
+                    $zone_pending += $item_pending;
+                    $total_amount += $item->total_amount;
+                    $total_pending += $item_pending;
+                @endphp
                 <tr style="{{$color}}">
                     <td class="px-6 py-4 w-4 text-center text-sm text-gray-500">
                         {{ $init }}
@@ -145,6 +207,29 @@
                 }
                 ?>
                 @endforeach
+            @if ($zone_group !== false)
+            <tr>
+                <td colspan="5" style="text-align: right; font-weight: bold;">SUBTOTAL {{ $client_name }}</td>
+                <td style="font-weight: bold;">S/ {{ number_format($client_amount, 2, '.', '') }}</td>
+                <td colspan="2"></td>
+                <td style="font-weight: bold;">S/ {{ number_format($client_pending, 2, '.', '') }}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <th colspan="5" style="text-align: right;">SUBTOTAL ZONA {{ $zone_name }}</th>
+                <th>S/ {{ number_format($zone_amount, 2, '.', '') }}</th>
+                <th colspan="2"></th>
+                <th>S/ {{ number_format($zone_pending, 2, '.', '') }}</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th colspan="5" style="text-align: right;">TOTAL GENERAL</th>
+                <th>S/ {{ number_format($total_amount, 2, '.', '') }}</th>
+                <th colspan="2"></th>
+                <th>S/ {{ number_format($total_pending, 2, '.', '') }}</th>
+                <th></th>
+            </tr>
+            @endif
             </tr>
         </tbody>
     </table>

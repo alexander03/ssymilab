@@ -8,6 +8,7 @@ use App\Models\PersonRole;
 use App\Models\PersonProduct;
 use App\Models\Role;
 use App\Models\Product;
+use App\Models\Zone;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -31,6 +32,8 @@ class MantComponent extends Component
     public $address, $email, $phone, $code, $shipping_person, $shipping_person_dni;
     public $search_list_product;
     public $supervisors;
+    public $zone_id, $zones;
+    public $payment_types = [];
 
     public $search_product_person;
     public $barcode;
@@ -63,6 +66,8 @@ class MantComponent extends Component
         $this->shipping_person = $this->person->shipping_person;
         $this->shipping_person_dni = $this->person->shipping_person_dni;
         $this->supervisor_id = $this->person->supervisor_id;
+        $this->zone_id = $this->person->zone_id;
+        $this->payment_types = ($this->person->payment_types) ? explode(',', $this->person->payment_types) : [];
         $this->bandRole = false;
         if($person->id){
             $roles = $person->roles;
@@ -96,6 +101,34 @@ class MantComponent extends Component
         $this->arr_roles = Role::orderBy('name')->get();
         $this->search_products_person();
         $this->supervisors = $this->search_autocomplete2(null,['S','A']);
+        $this->zones = Zone::orderBy('name')->get();
+    }
+
+    //ZONA SOLO APLICA A CLIENTES (ROL 1)
+    private function zone_id_to_save(){
+        return (in_array('1', $this->roles) && $this->zone_id != "") ? $this->zone_id : null;
+    }
+
+    //FORMA DE PAGO SOLO APLICA A CLIENTES (ROL 1): "C", "D" O "C,D"
+    private function payment_types_to_save(){
+        if(!in_array('1', $this->roles)){
+            return null;
+        }
+        $types = array_values(array_intersect(['C', 'D'], $this->payment_types));
+        return (count($types) > 0) ? implode(',', $types) : null;
+    }
+
+    private function rules_validation($form_request){
+        $rules = $form_request->rules();
+        $rules['payment_types'] = in_array('1', $this->roles) ? ['required', 'array', 'min:1'] : ['nullable', 'array'];
+        $rules['payment_types.*'] = ['in:C,D'];
+        return $rules;
+    }
+
+    private function attributes_validation($form_request){
+        $attributes = $form_request->validationAttributes();
+        $attributes['payment_types'] = 'forma de pago';
+        return $attributes;
     }
 
     public function back_button(){
@@ -212,9 +245,9 @@ class MantComponent extends Component
 
         Validator::make(
             $this->inputs_validation(),
-            $form_request->rules(),
+            $this->rules_validation($form_request),
             $form_request->messages(),
-            $form_request->validationAttributes(),
+            $this->attributes_validation($form_request),
         )->validate();
 
         if($this->type == "1"){
@@ -244,6 +277,8 @@ class MantComponent extends Component
                 "shipping_person" => $this->shipping_person,
                 "shipping_person_dni" => $this->shipping_person_dni,
                 "supervisor_id" => $this->supervisor_id,
+                "zone_id" => $this->zone_id_to_save(),
+                "payment_types" => $this->payment_types_to_save(),
             ];
             $person = null;
             if($this->type == "1" && trim($this->dni) != ""){
@@ -303,9 +338,9 @@ class MantComponent extends Component
 
         Validator::make(
             $this->inputs_validation(),
-            $form_request->rules(),
+            $this->rules_validation($form_request),
             $form_request->messages(),
-            $form_request->validationAttributes(),
+            $this->attributes_validation($form_request),
         )->validate();
 
         if($this->type == "1"){
@@ -336,6 +371,8 @@ class MantComponent extends Component
                 "shipping_person" => $this->shipping_person,
                 "shipping_person_dni" => $this->shipping_person_dni,
                 "supervisor_id" => $this->supervisor_id,
+                "zone_id" => $this->zone_id_to_save(),
+                "payment_types" => $this->payment_types_to_save(),
             ];
             $this->person->update($input_person);
 
@@ -389,6 +426,7 @@ class MantComponent extends Component
             "roles" => $this->roles,
             "code" => $this->code,
             "supervisor_id" => $this->supervisor_id,
+            "payment_types" => $this->payment_types,
         ];
     }
 

@@ -10,19 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 trait SaleGuideTrait
 {
-    public function search_sale_guides($date_start, $date_end, $reason_id, $number, $supplier, $sort, $direction, $rows)
+    public function search_sale_guides($date_start, $date_end, $reason_id, $number, $supplier, $dispatched, $sort, $direction, $rows)
     {
         $date_start = Libreria::getParam($date_start);
         $date_end = Libreria::getParam($date_end);
         $number = Libreria::getParam($number);
         $reason_id = Libreria::getParam($reason_id);
         $supplier = Libreria::getParam($supplier);
+        $dispatched = Libreria::getParam($dispatched);
         $user = Auth::user();
         $list = SaleGuide::search($date_start, $date_end, $reason_id, $number, $supplier, null, $user->branch_office_id)
         ->select(
             "documents.*",
             DB::raw("(CASE WHEN people.type = '1' THEN CONCAT(people.surname_father,' ',people.surname_mother,' ', people.name) ELSE people.business_name END) AS client_name"),
         );
+        if(!is_null($dispatched)){
+            $list = $list->where('documents.dispatched', $dispatched);
+        }
         $list = $list->orderBy($sort, $direction);
         $list = $list->paginate($rows);
 

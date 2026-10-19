@@ -38,21 +38,21 @@ class CuentasxcobrarController extends Controller
      */
     public function pdf(Request $request)
     {
-        $lista = $this->search_payments($request->input('branch_office_id'),$request->input('date_start'),$request->input('date_end'),null,$request->input('client'), 4, 'document_payments.id', 'desc', 100000,$request->input('status_sale'));
+        $lista = $this->search_payments($request->input('branch_office_id'),$request->input('date_start'),$request->input('date_end'),null,$request->input('client'), 4, 'document_payments.id', 'desc', 100000,$request->input('status_sale'),$request->input('zone_id'));
         $pdf = PDF::loadView("{$this->directory}.pdf", compact('lista'));
         return $pdf->stream("reporte-cuotas-por-cobrar.pdf");
     }
 
     public function pdf2(Request $request)
     {
-        $lista = $this->search_sales($request->input('date_start'),$request->input('date_end'), null, null, $request->input('client'), null, 'P',null, 'documents.person_id', 'desc', 1000000);
+        $lista = $this->search_sales($request->input('date_start'),$request->input('date_end'), null, null, $request->input('client'), null, 'P',null, 'documents.person_id', 'desc', 1000000, $request->input('zone_id'));
         $pdf = PDF::loadView("{$this->directory}.pdf2", compact('lista'))->setPaper('A4');
         return $pdf->stream("reporte-cuotas-por-cobrar-vendedor.pdf");
     }
 
     public function excel(Request $request)
     {
-        $lista = $this->search_payments($request->input('branch_office_id'),$request->input('date_start'),$request->input('date_end'),null,$request->input('client'), 4, 'document_payments.id', 'desc', 100000,$request->input('status_sale'));
+        $lista = $this->search_payments($request->input('branch_office_id'),$request->input('date_start'),$request->input('date_end'),null,$request->input('client'), 4, 'document_payments.id', 'desc', 100000,$request->input('status_sale'),$request->input('zone_id'));
         $html = view("{$this->directory}.pdf")->with(compact('lista'))->render();
         return view("{$this->directory}.excel")->with(compact('html'));
     }

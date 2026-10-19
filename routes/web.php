@@ -12,6 +12,7 @@ use App\Http\Controllers\Maintenance\CategoryController;
 use App\Http\Controllers\Maintenance\PersonController;
 use App\Http\Controllers\Maintenance\ProductController;
 use App\Http\Controllers\Maintenance\UnitController;
+use App\Http\Controllers\Maintenance\ZoneController;
 use App\Http\Controllers\Purchase\EntryGuideController;
 use App\Http\Controllers\Purchase\InstallmentController;
 use App\Http\Controllers\Purchase\RequirementController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Report\ReportStockController;
 use App\Http\Controllers\Report\ReportProductSerieController;
 use App\Http\Controllers\Report\ReportPurchaseController;
 use App\Http\Controllers\Report\ReportProductSupplierController;
+use App\Http\Controllers\Report\ReportProductClientController;
 use App\Http\Controllers\Report\ReportSupplierController;
 use App\Http\Controllers\Report\ReportRequirementController;
 use App\Http\Controllers\Report\ReportExchangeController;
@@ -180,6 +182,12 @@ Route::group([
 
     Route::get('user-brand/{brand}/pdf-brand', [BrandController::class, 'pdf'])->name('pdf-brand');
 
+    Route::resource('zone', ZoneController::class)->only(['index', 'create', 'edit'])->names([
+        'index' => 'zone',
+        'create' => 'create-zone',
+        'edit' => 'edit-zone',
+    ]);
+
     Route::resource('reason', ReasonController::class)->only(['index', 'create', 'edit'])->names([
         'index' => 'reason',
         'create' => 'create-reason',
@@ -214,6 +222,7 @@ Route::group([
 
     Route::get('user-product/{product}/pdf-migrar', [ProductController::class, 'migrar'])->name('pdf-migrar');
     Route::get('user-product/{product}/pdf-product', [ProductController::class, 'pdf'])->name('pdf-product');
+    Route::get('user-product/{product}/excel-product', [ProductController::class, 'excel'])->name('excel-product');
     Route::get('user-product/{product}/pdf-stock-product', [ProductController::class, 'pdfStock'])->name('pdf-stock-product');
     Route::get('user-product/{product}/pdf-price-product', [ProductController::class, 'pdfPrice'])->name('pdf-price-product');
 
@@ -459,6 +468,12 @@ Route::group([
 
     Route::get('user-pdf-report-product-supplier/pdf', [ReportProductSupplierController::class, 'pdf'])->name('report-pdf-product-supplier');
     Route::get('user-pdf-report-product-supplier-resumen/pdf', [ReportProductSupplierController::class, 'pdfResumen'])->name('report-pdf-product-supplier-resumen');
+
+    Route::resource('report-product-client', ReportProductClientController::class)->only(['index'])->names([
+        'index' => 'report-product-client',
+    ]);
+    Route::get('report-product-client/pdf', [ReportProductClientController::class, 'pdf'])->name('report-pdf-product-client');
+    Route::get('report-product-client/excel', [ReportProductClientController::class, 'excel'])->name('report-excel-product-client');
 
     Route::resource('report-supplier', ReportSupplierController::class)->only(['index'])->names([
         'index' => 'report-supplier',

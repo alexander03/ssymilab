@@ -226,6 +226,20 @@
                             </tbody>
                             <tfoot class="bg-white divide-y divide-gray-200">
                                 <tr>
+                                    <td colspan="6" class="px-3 py-2 text-right text-lg text-gray-500 font-bold">SUBTOTAL ({{ $currency["symbol"] }})</td>
+                                    <td colspan="1" class="px-3 py-2 text-right text-lg text-gray-500 min-w-max">
+                                        {{ number_format($subtotal, 2) }}
+                                    </td>
+                                    <td colspan="1"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="px-3 py-2 text-right text-lg text-gray-500 font-bold">DESCUENTO ({{ $currency["symbol"] }})</td>
+                                    <td colspan="1" class="px-3 py-2 text-right text-lg text-gray-500 min-w-max">
+                                        <x-general.input type="number" step="0.01" min="0" class="text-right" id="discount" wire:model.lazy="discount" onclick="this.select()" />
+                                    </td>
+                                    <td colspan="1"></td>
+                                </tr>
+                                <tr>
                                     <td colspan="6" class="px-3 py-2 text-right text-lg text-gray-500 font-bold">TOTAL ({{ $currency["symbol"] }})</td>
                                     <td colspan="1" class="px-3 py-2 text-right text-lg text-gray-500 min-w-max">
                                         {{ number_format($total, 2) }}

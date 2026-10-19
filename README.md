@@ -1,64 +1,69 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# SSYMILAB
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gestión (ERP) de **SSYMILAB E.I.R.L.**: venta, compra, almacén y mantenimiento de equipos de laboratorio, con facturación electrónica SUNAT.
 
-## About Laravel
+## Tecnologías
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Laravel 8** (PHP 7.3 / 8) con **Jetstream** y **Livewire 2**: casi todas las pantallas son componentes Livewire.
+- **Tailwind CSS**, más componentes Blade propios en `resources/views/components/general` (`x-general.input`, `x-general.select`, `x-general.table`, `x-general.card-form`, ...).
+- **PostgreSQL** como base de datos de producción. Las búsquedas usan `ILIKE`, que es propio de PostgreSQL.
+- **DomPDF** y **TCPDF** para los PDF. Los "Excel" son vistas HTML descargadas como `.xls`.
+- **`clifacturacion/`**: módulo PHP aparte, sin Laravel, que envía los comprobantes al facturador electrónico.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Módulos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Menú | Qué contiene |
+|---|---|
+| **Mantenimiento** | Personas (clientes, proveedores, personal, vendedores...), productos, categorías, marcas, unidades, principios activos, motivos y zonas. |
+| **Venta** | Proformas, pedidos, ventas (facturas y boletas), caja, comisiones de vendedor y de supervisor, cuentas por cobrar, guías de venta, notas de crédito y anulaciones. |
+| **Almacén** | Documentos de almacén, guías de remisión, series, lotes, stock, kardex y formatos de envío. |
+| **Compras** | Requerimientos, compras, guías de entrada y cuentas por pagar. |
+| **Equipos** | Cronograma de mantenimiento preventivo, mantenimientos, instalaciones y próximos mantenimientos. |
+| **Facturación** | Comprobantes electrónicos, a través de `clifacturacion`. |
+| **Reportes** | Lotes, series, stock, caja, compras, proveedores, productos por proveedor, productos por cliente, requerimientos y tipo de cambio. |
+| **Sistema / Usuarios / Seguridad** | Empresa, sucursales, cajas, tarjetas, métodos de transferencia, usuarios, tipos de usuario, menús y acciones. |
 
-## Learning Laravel
+Todos los documentos (ventas, compras, guías, proformas, pedidos, notas de crédito...) se guardan en la tabla **`documents`** y sus líneas en **`document_details`**. El campo `document_type_id` indica qué es cada uno; por ejemplo, 12 = boleta, 13 = factura, 15 = pedido y 17 = nota de crédito. Cada tipo tiene su propio modelo (`Sale`, `Purchase`, `Proforma`, `Order`, ...) que extiende `Document`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Permisos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+El menú y los permisos **se guardan en la base de datos**, no en el código:
 
-## Laravel Sponsors
+| Tabla | Qué guarda |
+|---|---|
+| `menu_categories` | Los grupos del menú lateral: MANTENIMIENTO, VENTA, REPORTES... |
+| `menu_options` | Cada opción del menú. Su campo `link` es el nombre de la ruta (`brand`, `sale`, `report-product-client`...). |
+| `actions` | Lo que se puede hacer dentro de una opción: `create_brand`, `edit_brand`, `delete_brand`, `pdf_brand`... |
+| `permissions` | Qué tipo de usuario ve cada opción del menú (`menu_option_id`, `user_type_id`). |
+| `operations` | Qué tipo de usuario puede usar cada acción (`action_id`, `user_type_id`). |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+- Los permisos se asignan en **Usuarios → Tipo de usuario**, con el botón **Permisos** de cada fila.
+- Cada componente consulta las acciones permitidas en su `load_actions()`. La vista muestra u oculta los botones con `in_array('codigo_accion', $arr_actions)`.
 
-### Premium Partners
+## Cómo agregar una pantalla nueva
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[CMS Max](https://www.cmsmax.com/)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
+Copia el patrón de una pantalla existente. **Marcas** es el ejemplo más simple de CRUD y **Zonas** el más reciente:
 
-## Contributing
+1. **Modelo** en `app/Models`, con `SoftDeletes` y un scope `search`.
+2. **Trait de búsqueda** en `app/Http/Traits/<Módulo>/<Nombre>Trait.php` (por ejemplo `search_brands(...)`). Normaliza los filtros con `Libreria::getParam()`.
+3. **Controlador** en `app/Http/Controllers/<Módulo>`, que solo muestra las vistas `admin`, `create` y `edit` (y las exportaciones PDF/Excel si las hay).
+4. **Componentes Livewire** en `app/Http/Livewire/<Módulo>/<Nombre>/`:
+   - `AdminComponent`: el listado con filtros, paginación y `SortTable`.
+   - `MantComponent`: el formulario para crear y editar.
+   - `DeleteComponent`: el modal de confirmación para eliminar.
+5. **Validación** en `app/Http/LivewireRequest/<Módulo>/<Nombre>/<Nombre>Request.php`, con `rules()`, `messages()` y `validationAttributes()`.
+6. **Vistas**:
+   - `resources/views/app/<módulo>/<nombre>/`: las páginas que cargan el componente.
+   - `resources/views/livewire/<módulo>/<nombre>/`: las vistas de los componentes.
+7. **Rutas** en `routes/web.php`, con `Route::resource(...)->only([...])->names([...])`.
+8. **Menú y acciones**: crea una migración que inserte la fila en `menu_options` y sus `actions` (ver `database/migrations/2026_10_16_000000_create_zones_table.php`). Luego asigna los permisos desde Seguridad.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Para un **reporte**, sigue el mismo patrón en `Report/` (ver *Productos por cliente*). El PDF se genera con DomPDF desde una vista Blade, y el Excel reutiliza esa misma vista HTML con la cabecera `application/vnd.ms-excel`.
 
-## Code of Conduct
+## Convenciones
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Textos en mayúsculas**: los nombres y descripciones se guardan con `mb_strtoupper`.
+- **Fin de línea CRLF**: los archivos existentes usan CRLF. Respétalo al editarlos para no generar diffs innecesarios.
+- **Comentarios** cortos y en mayúsculas, como en el resto del código (`//ZONA SOLO APLICA A CLIENTES`).
+- **Migraciones incompletas**: la base de datos real tiene tablas que no tienen migración (por ejemplo mantenimientos, `person_products`, `schedules`, `notifications` y `jobs`). Para tener el esquema completo hay que restaurar un respaldo de la base de datos; `php artisan migrate` desde cero no basta. Los cambios nuevos sí deben ir siempre como migración.
+- **Respaldos fuera del repositorio**: los respaldos SQL (`dato-ssymilab.sql`) están en `.gitignore` y no deben subirse, porque contienen credenciales de SUNAT y datos de clientes.

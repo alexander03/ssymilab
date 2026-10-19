@@ -288,8 +288,20 @@ class ProformaController extends Controller
         }
         $pdf::SetXY(15, $pdf::GetY()+$alto-2);
         $pdf::SetFont('helvetica','B',9);
-        $pdf::Cell(165, $alto, "TOTAL", 'TR', 0, "R");
-        $pdf::Cell(20, $alto, $proforma->currency->symbol . ' ' . number_format($total,2), 'T', 0, "R");
+        //DESCUENTO GLOBAL: SUBTOTAL / DESCUENTO / TOTAL SOLO SI HAY DESCUENTO
+        $discount = $proforma->discount ? (float) $proforma->discount : 0;
+        if($discount > 0){
+            $pdf::Cell(165, $alto, "SUBTOTAL", 'TR', 0, "R");
+            $pdf::Cell(20, $alto, $proforma->currency->symbol . ' ' . number_format($total,2), 'T', 0, "R");
+            $pdf::SetXY(15, $pdf::GetY()+$alto);
+            $pdf::Cell(165, $alto, "DESCUENTO", 'R', 0, "R");
+            $pdf::Cell(20, $alto, "- " . $proforma->currency->symbol . ' ' . number_format($discount,2), 0, 0, "R");
+            $pdf::SetXY(15, $pdf::GetY()+$alto);
+            $total = $total - $discount;
+            $productosRectHeight += $alto*2;
+        }
+        $pdf::Cell(165, $alto, "TOTAL", ($discount > 0) ? 'R' : 'TR', 0, "R");
+        $pdf::Cell(20, $alto, $proforma->currency->symbol . ' ' . number_format($total,2), ($discount > 0) ? 0 : 'T', 0, "R");
 
         $pdf::RoundedRect(15, $productosRectY, 185, $productosRectHeight + $alto*4-4,2,'0110');
 

@@ -42,6 +42,15 @@
                         wire:model.defer="number" wire:keydown.enter="$refresh"/>
                 </div>
                 <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
+                    <label for="dispatched" class="font-semibold text-gray-600">Entrega: </label>
+                    <x-general.select id="dispatched" name="dispatched" wire:model.defer="dispatched" wire:change="$refresh">
+                        <option value="">TODOS</option>
+                        <option value="Y">COMPLETO</option>
+                        <option value="N">PENDIENTE</option>
+                        <option value="E">PARCIAL</option>
+                    </x-general.select>
+                </div>
+                <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
                     <label for="rows" class="font-semibold text-gray-600">Filas a Mostrar: </label>
                     <x-general.select id="rows" name="rows" wire:model.defer="rows" wire:change="$refresh">
                         <option value="10">10</option>
@@ -91,6 +100,12 @@
                             @foreach ($list_items as $item)
                                 @php
                                     $init = $init + 1;
+                                    $sunat = DB::connection('pgsql2')->select("select * from solicitud where tipo_documento='G' and correlativo='".substr($item->number,5,8)."' and serie='".substr($item->number,1,3)."' and estado_solicitud!='X'");
+                                    if(count($sunat)>0){
+                                        $enviado = "SI";
+                                    }else{
+                                        $enviado = "NO";
+                                    }
                                 @endphp
                                 <tr>
                                     <td class="px-6 py-4 w-4 text-center text-sm text-gray-500">
@@ -173,10 +188,12 @@
                                             <a title="Ver" href="javascript:void(0)" onclick="window.open('/clifacturacion/controlador/contComprobante.php?funcion=generarPDF&idventa={!!$item->id !!}','_blank')"
                                                 class="text-red-500 hover:text-red-800"><i class="fas fa-file-pdf"></i></a>
                                         </td>
-                                        @if(Auth::user()->user_type_id==1)
+                                        @if(Auth::user()->user_type_id==1 && $item->status<>"A" && $enviado=="NO")
                                         <td >
                                             <a title="Reenviar Facturador"  href="javascript:void(0)" onclick="declararGuia3('{!! "GuiaRemision" !!}',{!! $item->id !!})"><i class="fas fa-share"></i></a>
                                         </td>
+                                        @else
+                                        <td> - </td>
                                         @endif                                        
 
                                     @if (in_array('delete_referral_guide', $arr_actions))

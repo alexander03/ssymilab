@@ -20,7 +20,7 @@ class AdminComponent extends Component
     protected $table_allowed_actions;
     protected $arr_actions;
 
-    public $date_start, $date_end, $reason_id, $number, $addressee;
+    public $date_start, $date_end, $reason_id, $number, $addressee, $dispatched;
     public $reasons;
 
     public $rows = '10';
@@ -36,6 +36,7 @@ class AdminComponent extends Component
         'reason_id' => ['except' => ''],
         'number' => ['except' => ''],
         'addressee' => ['except' => ''],
+        'dispatched' => ['except' => ''],
         'rows' => ['except' => '10']
     ];
 
@@ -47,6 +48,7 @@ class AdminComponent extends Component
         $this->search_event = "search-sale-guide";
         $this->reasons = SaleGuide::list_reasons();
         $this->reason_id = "";
+        $this->dispatched = "";
     }
 
     public function updatingDateStart($value)
@@ -70,6 +72,11 @@ class AdminComponent extends Component
     }
 
     public function updatingAddressee($value)
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDispatched($value)
     {
         $this->resetPage();
     }
@@ -100,7 +107,7 @@ class AdminComponent extends Component
         $this->rows = (intval($this->rows) == 0) ? 10 : $this->rows;
 
         $list_items = [];
-        $list_items = $this->search_sale_guides($this->date_start,$this->date_end,$this->reason_id, $this->number,$this->addressee,$this->sort, $this->direction, $this->rows);
+        $list_items = $this->search_sale_guides($this->date_start,$this->date_end,$this->reason_id, $this->number,$this->addressee,$this->dispatched,$this->sort, $this->direction, $this->rows);
 
         return view('livewire.sale.sale-guide.admin-component')->with(compact('thead', 'list_items', 'arr_actions'));
     }

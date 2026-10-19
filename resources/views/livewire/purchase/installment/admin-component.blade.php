@@ -33,6 +33,15 @@
                         wire:model.defer="supplier" wire:keydown.enter="$refresh"/>
                 </div>
                 <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
+                    <label for="branch_office_id" class="font-semibold text-gray-600">Sucursal: </label>
+                    <x-general.select id="branch_office_id" name="branch_office_id" wire:model.defer="branch_office_id" wire:change="$refresh">
+                        <option value="0">TODAS</option>
+                        @foreach ($branch_offices as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                        @endforeach
+                    </x-general.select>
+                </div>
+                <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
                     <label for="rows" class="font-semibold text-gray-600">Filas a Mostrar: </label>
                     <x-general.select id="rows" name="rows" wire:model.defer="rows" wire:change="$refresh">
                         <option value="10">10</option>
@@ -49,12 +58,12 @@
         @if (in_array('create_requirement', $arr_actions))
         @endif
         <x-slot name="head">
-            <a href="{{ route('pdf-debts-to-pay') }}" target="_blank" >
+            <a href="#" onclick="window.open('{{ route('pdf-debts-to-pay') }}?supplier='+$('#supplier').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&number='+$('#number').val()+'&branch_office_id='+$('#branch_office_id').val(),'_blank')" >
                 <x-general.button class="bg-red-600 text-white hover:bg-red-700 active:bg-red-800 rounded-md mr-2" >
                     <i class="fas fa-file-pdf" aria-hidden="true"></i> {{ __(' PDF') }}
                 </x-general.button>
             </a>
-            <a href="#" onclick="window.open('{{ route('excel-debts-to-pay') }}?supplier='+$('#supplier').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&number='+$('#number').val(),'_blank')" >
+            <a href="#" onclick="window.open('{{ route('excel-debts-to-pay') }}?supplier='+$('#supplier').val()+'&date_start='+$('#date_start').val()+'&date_end='+$('#date_end').val()+'&number='+$('#number').val()+'&branch_office_id='+$('#branch_office_id').val(),'_blank')" >
                 <x-general.button class="bg-green-600 text-white hover:bg-green-700 active:bg-green-800 rounded-md mr-2" >
                     <i class="fas fa-file-excel" aria-hidden="true"></i> {{ __(' EXCEL') }}
                 </x-general.button>

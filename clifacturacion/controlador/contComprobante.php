@@ -418,10 +418,14 @@ switch ($funcion){
             left join brands b on b.id=p.brand_id
             where dm.document_id=".$idventa." order by dm.id asc");
         $total = 0;
+        $totalventa = 0;
         while($dat=$rs1->fetchObject()){
             //$descripcion = trim($dat->producto." ".$dat->presentation." ".$dat->marca);
             $detail = json_decode($dat->detail);
             $descripcion = $detail->producto;
+            //DESCUENTO POR ITEM (% SOBRE EL VALOR UNITARIO)
+            $descuentoxitem = (isset($detail->descuento) && $detail->descuento > 0) ? $detail->descuento : 0;
+            $totalventa += $dat->sell_price*$dat->quantity*(1 - $descuentoxitem/100);
             if($detail->declarar=="S"){
                 $rs2 = $objMovimiento->obtenerDataSQL("select l.*,ps.serie,pm.product_serie_id 
                     from product_moves pm
@@ -449,14 +453,22 @@ switch ($funcion){
                     "cantidad"=>$dat->quantity,
                     "descripcion"=>($descripcion),
                     "precioventaunitarioxitem"=>$dat->sell_price,
-                    "descuentoxitem"=>"0",
+                    "descuentoxitem"=>$descuentoxitem,
                     "tipoigv"=>10,//$dat->igvproducto,
                     "tasaisc"=>"0",
                     "aplicacionisc"=>"",
                     "precioventasugeridoxitem"=>"",
                 );
-                $total += $dat->sell_price*$dat->quantity;
+                $total += $dat->sell_price*$dat->quantity*(1 - $descuentoxitem/100);
             }
+        }
+        //DESCUENTO TOTAL: MOTIVO 02 = MONTO EN SOLES CON IGV (EL FACTURADOR LE QUITA EL IGV)
+        //SOLO LA PARTE QUE CORRESPONDE A LAS LINEAS DECLARADAS
+        $motivodescuento = "";
+        if($detalle->global_discount > 0 && $totalventa > 0){
+            $motivodescuento = "02";
+            $descuentototal = round($detalle->global_discount * $total / $totalventa, 2);
+            $total = $total - $descuentototal;
         }
         $_POST["totalDocumento"] = $total;
         if($formapago == "D"){
@@ -494,6 +506,7 @@ switch ($funcion){
                 "ruc"=>$ruc,
                 "moneda"=>$moneda,
                 "descuentototal"=>$descuentototal,
+                "motivodescuento"=>$motivodescuento,
                 "percepcion"=>$percepcion,
                 "aplicacionpercepcion"=>$aplicacionpercepcion,
                 "documentosanexos"=>$documentosanexos,
@@ -647,10 +660,15 @@ switch ($funcion){
             inner join units u on u.id=dm.unit_id
             left join brands b on b.id=p.brand_id
             where dm.document_id=".$idventa);
+        $total = 0;
+        $totalventa = 0;
         while($dat=$rs1->fetchObject()){
             //$descripcion = trim($dat->producto." ".$dat->presentation." ".$dat->marca);
             $detail = json_decode($dat->detail);
             $descripcion = $detail->producto;
+            //DESCUENTO POR ITEM (% SOBRE EL VALOR UNITARIO)
+            $descuentoxitem = (isset($detail->descuento) && $detail->descuento > 0) ? $detail->descuento : 0;
+            $totalventa += $dat->sell_price*$dat->quantity*(1 - $descuentoxitem/100);
             if($detail->declarar=="S"){
                 $rs2 = $objMovimiento->obtenerDataSQL("select l.*,ps.serie,pm.product_serie_id 
                     from product_moves pm
@@ -679,14 +697,22 @@ switch ($funcion){
                     "cantidad"=>$dat->quantity,
                     "descripcion"=>(trim($descripcion)),
                     "precioventaunitarioxitem"=>$dat->sell_price,
-                    "descuentoxitem"=>"0",
+                    "descuentoxitem"=>$descuentoxitem,
                     "tipoigv"=>10,//$dat->igvproducto,
                     "tasaisc"=>"0",
                     "aplicacionisc"=>"",
                     "precioventasugeridoxitem"=>"",
                 );
-                $total += $dat->sell_price*$dat->quantity;
+                $total += $dat->sell_price*$dat->quantity*(1 - $descuentoxitem/100);
             }
+        }
+        //DESCUENTO TOTAL: MOTIVO 02 = MONTO EN SOLES CON IGV (EL FACTURADOR LE QUITA EL IGV)
+        //SOLO LA PARTE QUE CORRESPONDE A LAS LINEAS DECLARADAS
+        $motivodescuento = "";
+        if($detalle->global_discount > 0 && $totalventa > 0){
+            $motivodescuento = "02";
+            $descuentototal = round($detalle->global_discount * $total / $totalventa, 2);
+            $total = $total - $descuentototal;
         }
         $_POST["totalDocumento"] = $total;
         try{
@@ -703,6 +729,7 @@ switch ($funcion){
                 "dni"=>$dni,
                 "moneda"=>$moneda,
                 "descuentototal"=>$descuentototal,
+                "motivodescuento"=>$motivodescuento,
                 "percepcion"=>$percepcion,
                 "aplicacionpercepcion"=>$aplicacionpercepcion,
                 "documentosanexos"=>$documentosanexos,

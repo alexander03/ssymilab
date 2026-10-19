@@ -626,6 +626,7 @@ class Algoritmos {
         $pdf->Cell(23, $alto, utf8_decode("TOTAL"), 0, 0, "C",true);
         $pdf->SetFont('Arial','',8);
         $total = 0;
+        $totalbruto = 0;
         $borde2 = 0;
         $pdf->Ln();
         $alto = 4;
@@ -648,9 +649,12 @@ class Algoritmos {
             $pdf->Cell(25, $alto, "S/ ".utf8_decode(number_format($Precio[$key],2,'.','')), $borde2, 0, "C");
             //$pdf->Cell(15, $alto2, utf8_decode("0.00"), $borde2, 0, "R");
             //$pdf->Cell(25, $alto2, utf8_decode(number_format($Precio[$key]*$Cant[$key]/1.18,2)), $borde2, 0, "R");
-            $pdf->Cell(23, $alto, "S/ ".utf8_decode(number_format($detalles[$key]["precioventaunitarioxitem"]*$Cant[$key],2)), $borde2, 0, "R");
-            //$pdf->Cell(22, $alto2, utf8_decode(number_format($Importe[$key],2)), $borde2, 0, "R");            
-            $total = $total + $detalles[$key]["precioventaunitarioxitem"]*$Cant[$key]/1.18;
+            //DESCUENTO POR ITEM (% SOBRE EL VALOR UNITARIO)
+            $descuentoxitem = (isset($detalles[$key]["descuentoxitem"]) && $detalles[$key]["descuentoxitem"] > 0) ? $detalles[$key]["descuentoxitem"] : 0;
+            $pdf->Cell(23, $alto, "S/ ".utf8_decode(number_format($detalles[$key]["precioventaunitarioxitem"]*$Cant[$key]*(1 - $descuentoxitem/100),2)), $borde2, 0, "R");
+            //$pdf->Cell(22, $alto2, utf8_decode(number_format($Importe[$key],2)), $borde2, 0, "R");
+            $totalbruto = $totalbruto + $detalles[$key]["precioventaunitarioxitem"]*$Cant[$key]/1.18;
+            $total = $total + $detalles[$key]["precioventaunitarioxitem"]*$Cant[$key]/1.18*(1 - $descuentoxitem/100);
             //$total = $total + $Importe[$key];
             $pdf->SetX(40);
             $pdf->MultiCell(80, $alto, utf8_decode($ProdServ[$key]), $borde2, "L");
@@ -668,6 +672,23 @@ class Algoritmos {
         $y2 = $pdf->GetY();
         $pdf->SetXY(135, $y+$alto+2);
         $alto = 5;
+        //DESCUENTO TOTAL: MOTIVO 02 = MONTO EN SOLES CON IGV; SIN MOTIVO (00) = %. DESCUENTOS SE MUESTRAN SIN IGV
+        if(isset($dataSolicitud["descuentototal"]) && $dataSolicitud["descuentototal"] > 0){
+            if(isset($dataSolicitud["motivodescuento"]) && $dataSolicitud["motivodescuento"] == "02"){
+                $total = $total - $dataSolicitud["descuentototal"]/1.18;
+            }else{
+                $total = $total * (1 - $dataSolicitud["descuentototal"]/100);
+            }
+        }
+        if(round($totalbruto - $total, 2) > 0){
+            $pdf->SetFont('Arial','',8);
+            $pdf->Cell(30, $alto, utf8_decode("Descuento:"), 'LTB', 0, "L");
+            $pdf->SetFont('Arial','B',8);
+            $pdf->Cell(10, $alto, utf8_decode("S/"), "RTB", 0, "L");
+            $pdf->Cell(25, $alto, utf8_decode(number_format($totalbruto - $total,2)), 1, 0, "R");
+            $pdf->Ln();
+            $pdf->SetX(135);
+        }
         $pdf->SetFont('Arial','',8);
         $pdf->Cell(30, $alto, utf8_decode("Op. Gravada:"), 'LTB', 0, "L");
         $pdf->SetFont('Arial','B',8);

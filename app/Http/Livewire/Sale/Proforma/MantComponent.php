@@ -30,6 +30,8 @@ class MantComponent extends Component
     public $modal_supplier = false;
 
     public $client_id, $currency_id, $number, $date_time, $total, $comment;
+    public $subtotal = 0;
+    public $discount = 0;
 
     public $branch_office;
     public $supplier;
@@ -70,6 +72,7 @@ class MantComponent extends Component
             $this->client_id = $this->proforma->client_id;
             $this->currency_id = $this->proforma->currency_id;
             $this->total = $this->proforma->total;
+            $this->discount = $this->proforma->discount ? $this->proforma->discount + 0 : 0;
             $this->comment = (array_key_exists('comment', $details)) ? $details["comment"] : "";
             $this->validez = (array_key_exists('validez', $details)) ? $details["validez"] : "";
             $this->condicion = (array_key_exists('condicion', $details)) ? $details["condicion"] : "";
@@ -137,6 +140,7 @@ class MantComponent extends Component
 
         $this->search_person = $this->supplier["name_complete"];
         $this->search_products();
+        $this->calculate_total();
 
     }
 
@@ -204,7 +208,6 @@ class MantComponent extends Component
 
     public function updatedShoppingCar()
     {
-        $total = 0;
         foreach ($this->shopping_car as $key => $value) {
             if(!$value["quantity"] || trim($value["quantity"]) == "" || trim($value["quantity"]) <= 0 ){
                 $value["quantity"] = "1";
@@ -215,9 +218,39 @@ class MantComponent extends Component
                 $this->shopping_car[$key]["sell_price"] = "0.00";
                 $this->shopping_car[$key]["sell_price_min"] = "0.00";
             }
-            $total = $total + $value["quantity"] * $value["sell_price"];
         }
-        $this->total = $total;
+        $this->calculate_total();
+    }
+
+    public function updatedDiscount()
+    {
+        $this->calculate_total();
+    }
+
+    //SUBTOTAL = SUMA DE PRODUCTOS; TOTAL = SUBTOTAL - DESCUENTO (MONTO GLOBAL)
+    private function calculate_total()
+    {
+        $subtotal = 0;
+        foreach ($this->shopping_car as $key => $value) {
+            $subtotal = $subtotal + $value["quantity"] * $value["sell_price"];
+        }
+        if(!is_numeric($this->discount) || $this->discount < 0){
+            $this->discount = 0;
+        }
+        $this->subtotal = $subtotal;
+        $this->total = $subtotal - $this->discount;
+    }
+
+    private function validate_discount()
+    {
+        if($this->discount > $this->subtotal){
+            $this->emit('alert-error', [
+                'title' => 'Error!',
+                'text' => 'El descuento no puede ser mayor al subtotal.',
+            ]);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -385,6 +418,10 @@ class MantComponent extends Component
         //     $form_request->messages(),
         //     $form_request->validationAttributes(),
         // )->validate();
+        $this->calculate_total();
+        if(!$this->validate_discount()){
+            return true;
+        }
         DB::beginTransaction();
         try {
             $document = Proforma::create($this->input_create_proforma());
@@ -429,6 +466,10 @@ class MantComponent extends Component
      */
     public function update($comment){
         $this->comment = $comment;
+        $this->calculate_total();
+        if(!$this->validate_discount()){
+            return true;
+        }
         DB::beginTransaction();
         try {
             
@@ -494,6 +535,7 @@ class MantComponent extends Component
             "date_time" => $this->date_time,
             "number" => $this->number,
             "total" => $this->total,
+            "discount" => $this->discount,
             // "exchange_rate" => $this->exchange_rate,
             'detail' => json_encode($detail),
             'status' => 'P'
@@ -512,6 +554,8 @@ class MantComponent extends Component
             'user_id' => Auth::user()->id,
             'branch_office_id' => Auth::user()->branch_office_id,
             'date_time' => $this->date_time,
+            "total" => $this->total,
+            "discount" => $this->discount,
             'detail' => json_encode($detail),
             'status' => $this->proforma->status,
         ];

@@ -36,16 +36,16 @@ class InstallmentController extends Controller
      * @param  int $proforma
      * @return \Illuminate\Http\Response
      */
-    public function pdf()
+    public function pdf(Request $request)
     {
-        $lista = $this->search_installments(null,null,null,null, 1, 'document_payments.id', 'desc', 100000);
+        $lista = $this->search_installments($request->input('date_start'),$request->input('date_end'),$request->input('number'),$request->input('supplier'), 1, 'document_payments.id', 'desc', 100000, null, $request->input('branch_office_id'));
         $pdf = PDF::loadView("{$this->directory}.pdf", compact('lista'))->setPaper('A4', 'Landscape');
         return $pdf->stream("reporte-cuotas-por-pagar.pdf");
     }
 
     public function excel(Request $request)
     {
-        $lista = $this->search_installments($request->input('date_start'),$request->input('date_end'),$request->input('number'),$request->input('supplier'), 1, 'document_payments.id', 'desc', 100000);
+        $lista = $this->search_installments($request->input('date_start'),$request->input('date_end'),$request->input('number'),$request->input('supplier'), 1, 'document_payments.id', 'desc', 100000, null, $request->input('branch_office_id'));
         return view("{$this->directory}.excel")->with(compact('lista'));
     }
 }

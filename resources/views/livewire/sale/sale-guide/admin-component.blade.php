@@ -42,6 +42,15 @@
                         wire:model.defer="number" wire:keydown.enter="$refresh"/>
                 </div>
                 <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
+                    <label for="dispatched" class="font-semibold text-gray-600">Entrega: </label>
+                    <x-general.select id="dispatched" name="dispatched" wire:model.defer="dispatched" wire:change="$refresh">
+                        <option value="">TODOS</option>
+                        <option value="Y">COMPLETO</option>
+                        <option value="N">PENDIENTE</option>
+                        <option value="E">PARCIAL</option>
+                    </x-general.select>
+                </div>
+                <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
                     <label for="rows" class="font-semibold text-gray-600">Filas a Mostrar: </label>
                     <x-general.select id="rows" name="rows" wire:model.defer="rows" wire:change="$refresh">
                         <option value="10">10</option>

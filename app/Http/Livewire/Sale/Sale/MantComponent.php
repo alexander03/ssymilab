@@ -105,6 +105,12 @@ class MantComponent extends Component
     public $lot_id;
     public $detraccion;
     public $detracciones,$porcentaje;
+    public $allowed_payment_types = ['C', 'D'];
+    //DESCUENTO: "T" = TOTAL (MONTO GLOBAL), "I" = POR ITEM (% POR LINEA); SOLO UNO A LA VEZ
+    public $discount_type = "T";
+    public $global_discount = 0;
+    public $subtotal = 0;
+    public $discount_amount = 0;
 
     protected $listeners = [
         'toggle-modal-supplier' => 'toggle_supplier',
@@ -287,10 +293,21 @@ class MantComponent extends Component
     {
         $this->load_actions();
         $arr_actions = $this->arr_actions;
+        $this->sync_payment_types();
 
         $person = new Person();
         $role_id = Role::where('code', 'C')->first()->id;
         return view('livewire.sale.sale.mant-component')->with(compact('person', 'role_id', 'arr_actions'));
+    }
+
+    //FORMAS DE PAGO PERMITIDAS SEGUN EL CLIENTE SELECCIONADO (SIN CLIENTE = AMBAS)
+    private function sync_payment_types(){
+        $client = (isset($this->supplier["id"]) && $this->supplier["id"] != "") ? Person::find($this->supplier["id"]) : null;
+        $this->allowed_payment_types = $client ? $client->getAllowedPaymentTypes() : ['C', 'D'];
+        if(!in_array($this->type, $this->allowed_payment_types)){
+            $this->type = $this->allowed_payment_types[0];
+            $this->updatedType();
+        }
     }
 
     /**
@@ -353,6 +370,7 @@ class MantComponent extends Component
 
     public function updatedShoppingCar()
     {
+        $subtotal = 0;
         $total = 0;
         foreach ($this->shopping_car as $key => $value) {
             if(!$value["quantity"] || trim($value["quantity"]) == "" || trim($value["quantity"]) <= 0 ){
@@ -364,10 +382,62 @@ class MantComponent extends Component
                 $this->shopping_car[$key]["sell_price"] = "0.00";
                 $this->shopping_car[$key]["sell_price_min"] = "0.00";
             }
-            $total = $total + $value["quantity"] * $value["sell_price"];
+            $percent = $this->item_discount_percent($key);
+            $line = $value["quantity"] * $value["sell_price"];
+            $subtotal = $subtotal + $line;
+            $total = $total + $line * (1 - $percent / 100);
         }
+        if($this->discount_type == "T"){
+            if(!is_numeric($this->global_discount) || $this->global_discount < 0){
+                $this->global_discount = 0;
+            }
+            $total = $subtotal - $this->global_discount;
+        }
+        $this->subtotal = $subtotal;
+        $this->discount_amount = $subtotal - $total;
         $this->total = $total;
         $this->updatedType();
+    }
+
+    //% DE DESCUENTO DE LA LINEA (ENTERO DE 0 A 100); SOLO APLICA EN MODO POR ITEM
+    //ENTERO PORQUE EL FACTURADOR ESCRIBE EL FACTOR EN EL XML CON 2 DECIMALES (5% = 0.05)
+    private function item_discount_percent($key)
+    {
+        $percent = $this->shopping_car[$key]["discount_percent"] ?? 0;
+        if(!is_numeric($percent) || $percent < 0 || $percent > 100 || $this->discount_type != "I"){
+            $percent = 0;
+        }
+        $percent = (int) round($percent);
+        $this->shopping_car[$key]["discount_percent"] = $percent;
+        return $percent;
+    }
+
+    public function updatedDiscountType()
+    {
+        if($this->discount_type == "I"){
+            $this->global_discount = 0;
+        }else{
+            foreach ($this->shopping_car as $key => $value) {
+                $this->shopping_car[$key]["discount_percent"] = 0;
+            }
+        }
+        $this->updatedShoppingCar();
+    }
+
+    public function updatedGlobalDiscount()
+    {
+        $this->updatedShoppingCar();
+    }
+
+    private function validate_discount(){
+        if($this->discount_type == "T" && $this->global_discount > $this->subtotal){
+            $this->emit('alert-error', [
+                'title' => 'Error!',
+                'text' => 'El descuento no puede ser mayor al subtotal.',
+            ]);
+            return false;
+        }
+        return true;
     }
 
     public function updatedType()
@@ -432,8 +502,13 @@ class MantComponent extends Component
         $document_type = DocumentType::find($value);
         if($document_type){
             $this->document_type_name = $document_type->name;
-            $this->number = $this->getNextNumberSale($document_type->id);
+            $this->number = $this->getNextNumberSale($document_type->id, $this->detraccion != '');
         }
+    }
+
+    public function updatedDetraccion($value)
+    {
+        $this->number = $this->getNextNumberSale($this->document_type_id, $value != '');
     }
 
     /**
@@ -552,6 +627,9 @@ class MantComponent extends Component
                     ];
                 }
             }
+            //DESCUENTO GLOBAL DE LA PROFORMA => DESCUENTO TOTAL DE LA VENTA
+            $this->discount_type = "T";
+            $this->global_discount = $document->discount ? (float) $document->discount : 0;
             if($document->client){
                 $this->supplier = [
                     'id' => ($document->client) ? $document->client->id : "",
@@ -573,6 +651,7 @@ class MantComponent extends Component
         $this->document2_id = null;
         $this->search_document = "";
         $this->shopping_car = [];
+        $this->global_discount = 0;
         $this->supplier = [
             'id' => "",
             'type' => "6",
@@ -600,6 +679,10 @@ class MantComponent extends Component
         if($document){
             $this->document_id = $document->id;
             $this->search_document_order = $document->number;
+            //FORMA DE PAGO DEL PEDIDO (SE RECALCULAN LOS PAGOS EN updatedShoppingCar)
+            if(in_array($document->type, ['C', 'D'])){
+                $this->type = $document->type;
+            }
             $this->shopping_car = [];
             $details = $document->details;
             foreach ($details as $key => $value) {
@@ -1078,6 +1161,17 @@ class MantComponent extends Component
         //     $form_request->messages(),
         //     $form_request->validationAttributes(),
         // )->validate();
+        $client = (isset($this->supplier["id"]) && $this->supplier["id"] != "") ? Person::find($this->supplier["id"]) : null;
+        if($client && !in_array($this->type, $client->getAllowedPaymentTypes())){
+            $this->emit('alert-error', [
+                'title' => 'Error!',
+                'text' => 'La forma de pago no está permitida para este cliente.',
+            ]);
+            return true;
+        }
+        if(!$this->validate_discount()){
+            return true;
+        }
         if(!$this->validate_product_moves()){
             return true;
         }
@@ -1132,10 +1226,10 @@ class MantComponent extends Component
                     'currency_id' => $this->currency_id,
                     'quantity' => $item["quantity"],
                     'sell_price' => $item["sell_price"],
-                    'subtotal' => $item["quantity"]*$item["sell_price"],
+                    'subtotal' => $item["quantity"]*$item["sell_price"]*(1 - ($item["discount_percent"] ?? 0)/100),
                     'dispatched_quantity' => 0,
                     'status' => 'N',
-                    'detail' => json_encode(["producto"=>$item["product_name_original"],"declarar"=>$item["declarar"]]),
+                    'detail' => json_encode(["producto"=>$item["product_name_original"],"declarar"=>$item["declarar"],"descuento"=>$item["discount_percent"] ?? 0]),
                 ];
                 $guide_detail = DocumentDetail::create($input_detail);
 
@@ -1347,10 +1441,13 @@ class MantComponent extends Component
             "document2_id" => $this->document2_id,
             "detraccion" => $this->detraccion,
             "porcentajedetraccion" => $porcentaje[$this->detraccion],
-            "cuentabn" => "00161567493"
+            "cuentabn" => "00161567493",
+            "discount_type" => $this->discount_type
         ];
         $person = Person::find($this->personal["id"]);
         return [
+            "discount" => $this->discount_amount,
+            "global_discount" => ($this->discount_type == "T") ? $this->global_discount : 0,
             "type" => $this->type,
             "document_type_id" => $this->document_type_id,
             "document_id" => $this->document_id,
@@ -1362,7 +1459,7 @@ class MantComponent extends Component
             'branch_office_id' => Auth::user()->branch_office_id,
             "schedule_time" => $this->schedule_time,
             "date_time" => $this->date_time." ".date("H:i:s"),
-            "number" => $this->getNextNumberSale($this->document_type_id),
+            "number" => $this->getNextNumberSale($this->document_type_id, $this->detraccion != ''),
             "total" => $this->total,
             "exchange_rate" => $this->exchange_rate,
             "pending_amount" => $this->pending_amount,

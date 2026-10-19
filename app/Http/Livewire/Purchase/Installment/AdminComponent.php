@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Purchase\Installment;
 
 use App\Http\Traits\General\SortTable;
 use App\Http\Traits\Purchase\InstallmentTrait;
+use App\Models\BranchOffice;
 use App\Models\MenuOption;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -19,6 +20,8 @@ class AdminComponent extends Component
     protected $arr_actions;
 
     public $date_start, $date_end, $number, $supplier;
+    public $branch_office_id;
+    public $branch_offices;
 
     public $rows = '10';
 
@@ -32,11 +35,17 @@ class AdminComponent extends Component
         'date_end' => ['except' => ''],
         'number' => ['except' => ''],
         'supplier' => ['except' => ''],
+        'branch_office_id' => ['except' => ''],
         'rows' => ['except' => '10']
     ];
 
     public function mount()
     {
+        //POR DEFECTO LA SUCURSAL DEL USUARIO; "0" = TODAS
+        if(is_null($this->branch_office_id) || $this->branch_office_id === ""){
+            $this->branch_office_id = Auth::user()->branch_office_id;
+        }
+        $this->branch_offices = BranchOffice::orderBy('name','asc')->get();
         $this->date_start = date('Y-m-d');
         $this->sort = "document_payments.id";
         $this->direction = "desc";
@@ -59,6 +68,11 @@ class AdminComponent extends Component
     }
 
     public function updatingSupplier($value)
+    {
+        $this->resetPage();
+    }
+
+    public function updatingBranchOfficeId($value)
     {
         $this->resetPage();
     }
@@ -88,7 +102,7 @@ class AdminComponent extends Component
         $this->rows = (intval($this->rows) == 0) ? 10 : $this->rows;
 
         $list_items = [];
-        $list_items = $this->search_installments($this->date_start,$this->date_end,$this->number,$this->supplier, 1, $this->sort, $this->direction, $this->rows);
+        $list_items = $this->search_installments($this->date_start,$this->date_end,$this->number,$this->supplier, 1, $this->sort, $this->direction, $this->rows, null, $this->branch_office_id);
 
 
         return view('livewire.purchase.installment.admin-component')->with(compact('thead', 'list_items', 'arr_actions'));
