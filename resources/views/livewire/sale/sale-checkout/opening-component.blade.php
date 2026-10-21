@@ -5,7 +5,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2">
             <div class="p-2">
                 <label for="date_time">Fecha: </label>
-                <x-general.input type="date" disabled id="date_time" placeholder="Fecha" wire:model.defer="date_time" />
+                <x-general.input type="date" id="date_time" placeholder="Fecha" wire:model.defer="date_time" />
                 <x-jet-input-error for="date_time" />
             </div>
             <div class="p-2">
