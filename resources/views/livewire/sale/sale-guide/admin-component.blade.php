@@ -189,7 +189,7 @@
                                             <a title="Ver" href="javascript:void(0)" onclick="window.open('/clifacturacion/controlador/contComprobante.php?funcion=generarPDF&idventa={!!$item->id !!}','_blank')"
                                                 class="text-red-500 hover:text-red-800"><i class="fas fa-file-pdf"></i></a>
                                         </td>
-                                        @if(Auth::user()->user_type_id==1 && $item->status<>"A" && $enviado=="NO")
+                                        @if((Auth::user()->user_type_id==1 || Auth::user()->user_type_id==10) && $item->status<>"A" && $enviado=="NO")
                                         <td >
                                             <a title="Reenviar Facturador"  href="javascript:void(0)" onclick="declararGuia2('{!! "GuiaRemision" !!}',{!! $item->id !!})"><i class="fas fa-share"></i></a>
                                         </td>
