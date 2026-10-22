@@ -108,7 +108,7 @@ class AdminComponent extends Component
 
         if($user->user_type_id==1){//ADMIN
             $checkouts = Checkout::orderBy('name','asc')->get();
-        }elseif($user->id==5){//FACTURACION
+        }elseif($user->id==5 || $user->id==12){//FACTURACION
             $checkouts = Checkout::whereIn('id',[5,6])->orderBy('name','asc')->get();
         }else{
             if(count($checkouts) == 0){
