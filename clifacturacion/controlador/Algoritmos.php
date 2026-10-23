@@ -1311,7 +1311,12 @@ class Algoritmos {
         $UbigeoFin = $ubigeofin;
         $DireccionFin = $dataSolicitud["direccfin"];
         $Detalles = $dataSolicitud["detalles"];
-        $Observaciones = $dataSolicitud["observaciones"];
+        //OBSERVACIONES ACTUALES DE LA GUIA (CAMPO OBSERVACION DEL FORMULARIO); SI NO HAY, LAS ENVIADAS AL FACTURADOR
+        if(isset($objSolicitud["observaciones"]) && trim($objSolicitud["observaciones"]) != ""){
+            $Observaciones = $objSolicitud["observaciones"];
+        }else{
+            $Observaciones = isset($dataSolicitud["observaciones"]) ? $dataSolicitud["observaciones"] : "";
+        }
         $OrdenCompra = $dataSolicitud["ordencompra"];
         $NumeroFactura = $dataSolicitud["numerofactura"];
         $PesoTotal = $dataSolicitud["pesototal"];

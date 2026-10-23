@@ -5,6 +5,30 @@ $mdlSolicitud = new mdlSolicitud();
 $id_solicitud = $_GET["idsolicitud"];
 $objSolicitud = $mdlSolicitud->verSolicitud($id_solicitud);
 $numero = $objSolicitud["serie"]."-".str_pad($objSolicitud["correlativo"],8,"0",STR_PAD_LEFT);
+
+//EMAIL DEL CLIENTE (PERSONAS) POR SU RUC / DNI, PARA AGREGARLO POR DEFECTO
+//EL DOCUMENTO SE TOMA DEL JSON ENVIADO: "ruc" (FACTURA), "dni" (BOLETA) O "doc" (GUIA / NOTAS)
+$email_cliente = "";
+$data_solicitud = isset($objSolicitud["data_solicitud"]) ? json_decode($objSolicitud["data_solicitud"], true) : null;
+$doc_cliente = "";
+if(is_array($data_solicitud)){
+    foreach (array("ruc", "dni", "doc") as $campo) {
+        if(isset($data_solicitud[$campo]) && is_scalar($data_solicitud[$campo]) && trim((string) $data_solicitud[$campo]) != ""){
+            $doc_cliente = trim((string) $data_solicitud[$campo]);
+            break;
+        }
+    }
+}
+$doc_cliente = preg_replace('/[^0-9A-Za-z]/', '', $doc_cliente);
+if($doc_cliente != ""){
+    require_once("../cado/cado.php");
+    $objMovimiento = new clsAccesoDatos(1,1);
+    $rst = $objMovimiento->obtenerDataSQL("select email from people where (ruc='".$doc_cliente."' or dni='".$doc_cliente."') and deleted_at is null and email is not null and trim(email)<>'' order by updated_at desc limit 1");
+    $cliente = $rst ? $rst->fetchObject() : null;
+    if($cliente && filter_var(trim($cliente->email), FILTER_VALIDATE_EMAIL)){
+        $email_cliente = trim($cliente->email);
+    }
+}
 ?>
 <section>
     <div class="row titulo">
@@ -78,8 +102,8 @@ $numero = $objSolicitud["serie"]."-".str_pad($objSolicitud["correlativo"],8,"0",
         }
     }
 
-    function anadiremail(){
-        email = $("#emailtext").val();
+    function anadiremail(valor){
+        email = (typeof valor === "string") ? valor : $("#emailtext").val();
                 $('#lstcorreo > tbody').append('<tr> '+
                                                 '<td ><input type="hidden" name="emails[]" value="'+email+'"><div style="margin-left:7%";>'+email+
                                                 '<div></td>'+
@@ -96,6 +120,11 @@ $numero = $objSolicitud["serie"]."-".str_pad($objSolicitud["correlativo"],8,"0",
         event.preventDefault();
         boton.closest('tr').remove();
     }
+
+    //EMAIL DEL CLIENTE AGREGADO POR DEFECTO (SE PUEDE QUITAR CON LA X)
+    <?php if($email_cliente != ""){ ?>
+    anadiremail(<?php echo json_encode($email_cliente); ?>);
+    <?php } ?>
 
     function mandaemail(){
         var j= 0;

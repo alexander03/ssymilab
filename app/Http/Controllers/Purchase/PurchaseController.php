@@ -117,6 +117,17 @@ class PurchaseController extends Controller
     //     return view("{$this->directory}.edit")->with(compact('purchase', 'title_edit', 'category_menu', 'option_menu', 'option_edit'));
     // }
 
+    //DESCARGA EL ARCHIVO (IMAGEN O PDF) ADJUNTO A LA COMPRA
+    public function download_file($id)
+    {
+        $purchase = Purchase::find($id);
+        $media = $purchase ? $purchase->getFirstMedia('images') : null;
+        if(!$media || !file_exists($media->getPath())){
+            return redirect()->route('purchase');
+        }
+        return response()->download($media->getPath(), $media->file_name);
+    }
+
         /**
      * Show the form for editing the specified resource.
      *

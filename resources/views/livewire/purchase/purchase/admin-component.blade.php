@@ -170,6 +170,11 @@
                                         <td class="px-3 py-2 w-4 text-center text-base font-medium">
                                             <a title="Ver" href="{{ route('show-purchase', ['purchase' => $item->id]) }}"
                                                 class="text-blue-400 hover:text-blue-700"><i class="fas fa-eye"></i></a>
+                                            {{-- ARCHIVO ADJUNTO DE LA COMPRA (IMAGEN O PDF) --}}
+                                            @if ($item->hasMedia('images'))
+                                                <a title="Descargar archivo" href="{{ route('purchase-file', ['id' => $item->id]) }}"
+                                                    class="text-green-600 hover:text-green-800 ml-2"><i class="fas fa-download"></i></a>
+                                            @endif
                                         </td>
                                     @endif
 

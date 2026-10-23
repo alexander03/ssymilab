@@ -25,6 +25,8 @@ class AdminComponent extends Component
     public $branch_office;
 
     public $date_start, $date_end, $supplier;
+    //TIPO: "" = TODOS, "N" = NACIONAL, "E" = EXTRANJERO (CON DUA)
+    public $origin = "";
 
     public $types, $rows = '10';
 
@@ -64,6 +66,11 @@ class AdminComponent extends Component
         $this->resetPage();
     }
 
+    public function updatingOrigin($value)
+    {
+        $this->resetPage();
+    }
+
     public function updatingRows($value)
     {
         $this->resetPage();
@@ -87,7 +94,7 @@ class AdminComponent extends Component
         $thead[]       = array('value' => 'Pendiente', 'colspan' => '1', 'link' => 'documents.pending_amount');
         
         $list_items = [];
-        $list_items = $this->search_purchases_report($this->branch_office_id,$this->date_start,$this->date_end,'', '',$this->supplier, $this->sort, $this->direction, $this->rows);
+        $list_items = $this->search_purchases_report($this->branch_office_id,$this->date_start,$this->date_end,'', '',$this->supplier, $this->sort, $this->direction, $this->rows, $this->origin);
 
 
         return view('livewire.report.purchase.admin-component')->with(compact('thead', 'list_items', 'arr_actions'));

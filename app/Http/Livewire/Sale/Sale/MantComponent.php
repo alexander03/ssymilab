@@ -106,6 +106,7 @@ class MantComponent extends Component
     public $detraccion;
     public $detracciones,$porcentaje;
     public $allowed_payment_types = ['C', 'D'];
+    public $allowed_declaration_types = ['C', 'D'];
     //DESCUENTO: "T" = TOTAL (MONTO GLOBAL), "I" = POR ITEM (% POR LINEA); SOLO UNO A LA VEZ
     public $discount_type = "T";
     public $global_discount = 0;
@@ -161,8 +162,10 @@ class MantComponent extends Component
         $this->document_types = Sale::list_document_types();
         $this->currencies = Currency::order_currency()->get();
 
-        $this->document_type_id = $this->document_types[0]->id;
-        $this->document_type_name = $this->document_types[0]->name;
+        //POR DEFECTO FACTURA DE VENTA (13); SI NO EXISTE, EL PRIMER TIPO
+        $default_document_type = $this->document_types->firstWhere('id', 13) ?? $this->document_types[0];
+        $this->document_type_id = $default_document_type->id;
+        $this->document_type_name = $default_document_type->name;
         $this->currency_id = $this->currencies[0]->id;
         $this->type = "D";
         $this->declaration = "C";
@@ -171,7 +174,7 @@ class MantComponent extends Component
         $this->exchange_rate = "1";
         $this->pending_amount = 0;
         $this->comment = "";
-        $this->number = $this->getNextNumberSale($this->document_types[0]->id);
+        $this->number = $this->getNextNumberSale($this->document_type_id);
 
         $branch_office = Auth::user()->branch_office;
         $supplier = null;
@@ -307,6 +310,11 @@ class MantComponent extends Component
         if(!in_array($this->type, $this->allowed_payment_types)){
             $this->type = $this->allowed_payment_types[0];
             $this->updatedType();
+        }
+        //DECLARACION PERMITIDA SEGUN EL CLIENTE (SOLO SE ELIGE EN VENTAS AL CREDITO)
+        $this->allowed_declaration_types = $client ? $client->getAllowedDeclarationTypes() : ['C', 'D'];
+        if($this->type == "D" && !in_array($this->declaration, $this->allowed_declaration_types)){
+            $this->declaration = $this->allowed_declaration_types[0];
         }
     }
 
@@ -611,6 +619,7 @@ class MantComponent extends Component
             foreach ($details as $key => $value) {
                 $product = Product::find($value["product_id"]);
                 if($product){
+                    $line_detail = ($value->detail && trim($value->detail) != "") ? json_decode($value->detail, true) : [];
                     $this->shopping_car[] = [
                         "product_id" => $value["product_id"],
                         "product_name" => $product->name.' - '.$product->presentation,
@@ -624,12 +633,23 @@ class MantComponent extends Component
                         "sell_price_min" => $value["sell_price"],
                         "product_moves" => [],
                         "declarar" => "S",
+                        "discount_percent" => (array_key_exists('descuento', $line_detail)) ? (int) $line_detail["descuento"] : 0,
                     ];
                 }
             }
-            //DESCUENTO GLOBAL DE LA PROFORMA => DESCUENTO TOTAL DE LA VENTA
-            $this->discount_type = "T";
-            $this->global_discount = $document->discount ? (float) $document->discount : 0;
+            //FORMA DE PAGO DE LA PROFORMA (SE RECALCULAN LOS PAGOS EN updatedShoppingCar)
+            if(in_array($document->type, ['C', 'D'])){
+                $this->type = $document->type;
+            }
+            //DESCUENTO DE LA PROFORMA: POR ITEM => % EN CADA LINEA; TOTAL => DESCUENTO TOTAL DE LA VENTA
+            $proforma_detail = ($document->detail && trim($document->detail) != "") ? json_decode($document->detail, true) : [];
+            if(array_key_exists('discount_type', $proforma_detail) && $proforma_detail["discount_type"] == "I"){
+                $this->discount_type = "I";
+                $this->global_discount = 0;
+            }else{
+                $this->discount_type = "T";
+                $this->global_discount = $document->discount ? (float) $document->discount : 0;
+            }
             if($document->client){
                 $this->supplier = [
                     'id' => ($document->client) ? $document->client->id : "",
@@ -1166,6 +1186,13 @@ class MantComponent extends Component
             $this->emit('alert-error', [
                 'title' => 'Error!',
                 'text' => 'La forma de pago no está permitida para este cliente.',
+            ]);
+            return true;
+        }
+        if($client && $this->type == "D" && !in_array($this->declaration, $client->getAllowedDeclarationTypes())){
+            $this->emit('alert-error', [
+                'title' => 'Error!',
+                'text' => 'La declaración no está permitida para este cliente.',
             ]);
             return true;
         }

@@ -570,8 +570,12 @@
                             <div class="grid sm:flex items-center p-2 ">
                                 <x-jet-label for="declaration" class="text-xs min-w-max mt-1 mr-3">DECLARACION: </x-jet-label>
                                 <x-general.select name="declaration" wire:model="declaration" :full="false" :block="false" class="w-30 mt-0">
+                                    @if (in_array('C', $allowed_declaration_types))
                                     <option value="C"> DECLARAR AL CONTADO </option>
+                                    @endif
+                                    @if (in_array('D', $allowed_declaration_types))
                                     <option value="D"> DECLARAR CON CUOTAS </option>
+                                    @endif
                                 </x-general.select>
                             </div>
                         </div>

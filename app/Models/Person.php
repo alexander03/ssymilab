@@ -28,6 +28,7 @@ class Person extends Model
         'supervisor_id',
         'zone_id',
         'payment_types',
+        'declaration_types',
     ];
 
     public function zone(){
@@ -40,6 +41,14 @@ class Person extends Model
             return ['C', 'D'];
         }
         return explode(',', $this->payment_types);
+    }
+
+    //DECLARACIONES PERMITIDAS (C = AL CONTADO, D = CON CUOTAS); SIN VALOR = AMBAS
+    public function getAllowedDeclarationTypes(){
+        if(is_null($this->declaration_types) || trim($this->declaration_types) == ""){
+            return ['C', 'D'];
+        }
+        return explode(',', $this->declaration_types);
     }
 
     public function roles(){

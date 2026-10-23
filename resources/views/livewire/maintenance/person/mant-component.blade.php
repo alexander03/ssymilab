@@ -138,6 +138,23 @@
                 <x-jet-input-error for="payment_types" class="mt-2"  />
             </div>
 
+            <div class="col-span-6 md:col-span-6" id="divDeclaracion" <?php if(in_array('1', $roles)==false){ ?> style="display: none;" <?php } ?>>
+                <label class="font-semibold text-gray-600">Declaración: </label>
+                <div class="flex items-center mt-2">
+                    <label class="flex items-center mr-6">
+                        <input type="checkbox" class="form-checkbox rounded h-4 w-4 text-blue-600"
+                            wire:key="declaration_type_C" wire:model.defer="declaration_types" value="C">
+                        <span class="ml-2 text-gray-700 text-sm font-semibold">DECLARAR AL CONTADO</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="form-checkbox rounded h-4 w-4 text-blue-600"
+                            wire:key="declaration_type_D" wire:model.defer="declaration_types" value="D">
+                        <span class="ml-2 text-gray-700 text-sm font-semibold">DECLARAR CON CUOTAS</span>
+                    </label>
+                </div>
+                <x-jet-input-error for="declaration_types" class="mt-2"  />
+            </div>
+
             <div class="col-span-6 md:col-span-2">
                 <x-jet-label for="shipping_person_dni" value="{{ __('DNI Persona Envio') }}" />
                 <x-general.input id="shipping_person_dni" type="number" class="mt-1 block w-full placeholder-gray-400" placeholder="DNI Persona de Envio" wire:model.defer="shipping_person_dni"  />
@@ -300,9 +317,11 @@
             if(check){
                 $("#divZona").css("display","");
                 $("#divFormaPago").css("display","");
+                $("#divDeclaracion").css("display","");
             }else{
                 $("#divZona").css("display","none");
                 $("#divFormaPago").css("display","none");
+                $("#divDeclaracion").css("display","none");
             }
         }
 

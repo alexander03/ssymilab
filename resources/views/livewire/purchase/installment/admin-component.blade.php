@@ -109,6 +109,9 @@
                                         {{ $item->total_amount }}
                                     </td>
                                     <td class="px-6 py-4 text-center uppercase text-sm text-gray-500">
+                                        {{ number_format($item->total_amount - $item->cash_amount - $item->card_amount - $item->transfer_amount, 2, '.', '') }}
+                                    </td>
+                                    <td class="px-6 py-4 text-center uppercase text-sm text-gray-500">
                                         {{ ($item->schedule_date) ? date_format(new DateTime($item->schedule_date), 'd/m/Y') : date_format(new DateTime($item->date_time), 'd/m/Y')}}
                                     </td>
                                     <td class="px-6 py-4 text-center uppercase text-sm text-gray-500">
@@ -151,12 +154,12 @@
                                                 <div><span class="font-bold">DEPOSITO:</span> {{ number_format($item->transfer_amount, 2) }}</div>
                                             @endif
                                         </td>
-                                        <td colspan="4" class="px-3 py-2 text-left text-xs text-gray-500 divide-y divide-gray-200">
+                                        <td colspan="5" class="px-3 py-2 text-left text-xs text-gray-500 divide-y divide-gray-200">
                                             @php
                                                 $payments_per_item = $item->payments;
                                             @endphp
                                             @foreach ($payments_per_item as $payment)
-                                                <div><span class="font-bold">{{ $payment->method_name }}:</span> {{ number_format($payment->amount, 2) }}</div>
+                                                <div><span class="font-bold">{{ $payment->method_name }}:</span> {{ number_format($payment->amount, 2) }}@if (trim($payment->operation_number) != "") | <span class="font-bold">VOUCHER:</span> {{ $payment->operation_number }}@endif</div>
                                             @endforeach
                                         </td>
                                     </tr>

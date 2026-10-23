@@ -37,22 +37,11 @@
         </p>
     </div>
 
-    <table border="1"  style=" width: 100%; border-collapse: collapse; margin-top: 10px;margin-bottom: 10px; padding:5px" >
-        <thead>
-            <tr>
-                <th> Nº </th>
-                <th> Fecha Emision</th>
-                <th> Venta </th>
-                <th> Cliente </th>
-                <th> Cuota</th>
-                <th> Monto </th>
-                <th> Fecha de Venci </th>
-                <th> Fecha de pago </th>
-                <th> Pendiente </th>
-                <th> Estado </th>
-            </tr>
-        </thead>
-        <tbody>
+    @php
+        //CABECERA DE LA TABLA: SE REPITE AL INICIO DE CADA ZONA
+        $table_open = '<table border="1" style=" width: 100%; border-collapse: collapse; margin-top: 5px;margin-bottom: 15px; padding:5px"><thead><tr><th> N&ordm; </th><th> Fecha Emision</th><th> Venta </th><th> Cliente </th><th> Cuota</th><th> Monto </th><th> Fecha de Venci </th><th> Fecha de pago </th><th> Pendiente </th><th> Estado </th></tr></thead><tbody>';
+        $table_close = '</tbody></table>';
+    @endphp
             @php
                 $init = 0;
                 $zone_group = false;
@@ -97,6 +86,7 @@
                         <th>S/ {{ number_format($zone_pending, 2, '.', '') }}</th>
                         <th></th>
                     </tr>
+                    {!! $table_close !!}
                 @endif
                 @if ($new_zone)
                     @php
@@ -105,9 +95,9 @@
                         $zone_amount = 0;
                         $zone_pending = 0;
                     @endphp
-                    <tr>
-                        <th colspan="10" style="text-align: left; background-color: #e5e7eb;">ZONA: {{ $zone_name }}</th>
-                    </tr>
+                    {{-- TITULO DE LA ZONA FUERA DE LA TABLA Y CABECERA REPETIDA --}}
+                    <p style="font-weight: 700; margin-top: 15px; margin-bottom: 0px;">ZONA: {{ $zone_name }}</p>
+                    {!! $table_open !!}
                 @endif
                 @if ($new_client)
                     @php
@@ -222,16 +212,16 @@
                 <th>S/ {{ number_format($zone_pending, 2, '.', '') }}</th>
                 <th></th>
             </tr>
-            <tr>
-                <th colspan="5" style="text-align: right;">TOTAL GENERAL</th>
-                <th>S/ {{ number_format($total_amount, 2, '.', '') }}</th>
-                <th colspan="2"></th>
-                <th>S/ {{ number_format($total_pending, 2, '.', '') }}</th>
-                <th></th>
-            </tr>
+            {!! $table_close !!}
+            <table border="1" style=" width: 100%; border-collapse: collapse; margin-top: 5px; padding:5px">
+                <tr>
+                    <th style="text-align: right;">TOTAL GENERAL</th>
+                    <th>MONTO: S/ {{ number_format($total_amount, 2, '.', '') }}</th>
+                    <th>PENDIENTE: S/ {{ number_format($total_pending, 2, '.', '') }}</th>
+                </tr>
+            </table>
+            @else
+            <p style="text-align: center;">No se encontraron registros</p>
             @endif
-            </tr>
-        </tbody>
-    </table>
 </body>
 </html>

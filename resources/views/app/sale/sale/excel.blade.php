@@ -49,6 +49,7 @@ header("Content-Disposition: attachment; filename=reporteventas.xls");
                 <th> Fecha Emision</th>
                 <th> Tipo Doc </th>
                 <th> Numero </th>
+                <th> Guía </th>
                 <th> Documento</th>
                 <th> Cliente </th>
                 <th> Total </th>
@@ -79,6 +80,15 @@ header("Content-Disposition: attachment; filename=reporteventas.xls");
                 </td>
                 <td class="px-6 py-4 text-center uppercase text-sm text-gray-500">
                     {{ $item->number }}
+                </td>
+                <td class="px-6 py-4 text-center uppercase text-sm text-gray-500">
+                    {{-- GV = GUIA DE VENTA, GR = GUIA DE REMISION --}}
+                    @php
+                        $item_guides = isset($guides[$item->id]) ? $guides[$item->id]->map(function($guide){
+                            return ($guide->document_type_id == 16 ? "GV: " : "GR: ").$guide->number.($guide->status == "A" ? " (ANULADA)" : "");
+                        })->implode(', ') : "";
+                    @endphp
+                    {{ $item_guides != "" ? $item_guides : "-" }}
                 </td>
                 <td class="px-6 py-4 text-center uppercase text-sm text-gray-500">
                     {{ $item->supplier_document }}

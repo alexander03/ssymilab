@@ -72,6 +72,20 @@
                             </div>
                             <div class="col-span-12 sm:col-span-4">
                                 <div class="py-1">
+                                    <x-jet-label for="type" class="font-semibold text-gray-600">Forma de pago: </x-jet-label>
+                                    <x-general.select name="type" wire:model="type">
+                                        @if (in_array('C', $allowed_payment_types))
+                                        <option value="C"> CONTADO </option>
+                                        @endif
+                                        @if (in_array('D', $allowed_payment_types))
+                                        <option value="D"> CREDITO </option>
+                                        @endif
+                                    </x-general.select>
+                                    <x-jet-input-error for="type" />
+                                </div>
+                            </div>
+                            <div class="col-span-12 sm:col-span-4">
+                                <div class="py-1">
                                     <x-jet-label for="validez" class="font-semibold text-gray-600"> Validez Oferta: </x-jet-label>
                                     <x-general.input type="text" id="validez" wire:model.defer="validez" />
                                     <x-jet-input-error for="validez" />
@@ -213,7 +227,13 @@
                                                 <x-jet-input-error for="shopping_car.{{ $key }}.sell_price" />
                                             </td>
                                             <td class="px-3 py-2 text-right text-xs text-gray-500">
-                                                {{ $currency["symbol"] . " " . number_format($item["sell_price"] * $item["quantity"], 2) }}
+                                                @if ($discount_type == "I")
+                                                    <div class="flex items-center justify-end mb-1">
+                                                        <span class="mr-1">Dscto %</span>
+                                                        <x-general.input :full="false" :block="false" type="number" step="1" min="0" max="100" class="w-20 text-right" autocomplete="off" wire:model.lazy="shopping_car.{{ $key }}.discount_percent" onclick="this.select()" />
+                                                    </div>
+                                                @endif
+                                                {{ $currency["symbol"] . " " . number_format($item["sell_price"] * $item["quantity"] * (1 - ($item["discount_percent"] ?? 0) / 100), 2) }}
                                             </td>
                                             <td class="px-3 py-2 text-center text-xs text-gray-500">
                                                 <button
@@ -233,9 +253,21 @@
                                     <td colspan="1"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="6" class="px-3 py-2 text-right text-lg text-gray-500 font-bold">DESCUENTO ({{ $currency["symbol"] }})</td>
+                                    <td colspan="6" class="px-3 py-2 text-right text-lg text-gray-500 font-bold">
+                                        <div class="flex items-center justify-end">
+                                            <span class="mr-2">DESCUENTO</span>
+                                            <x-general.select :full="false" :block="false" class="w-36 mr-2" wire:model="discount_type">
+                                                <option value="T">TOTAL ({{ $currency["symbol"] }})</option>
+                                                <option value="I">POR ÍTEM (%)</option>
+                                            </x-general.select>
+                                        </div>
+                                    </td>
                                     <td colspan="1" class="px-3 py-2 text-right text-lg text-gray-500 min-w-max">
-                                        <x-general.input type="number" step="0.01" min="0" class="text-right" id="discount" wire:model.lazy="discount" onclick="this.select()" />
+                                        @if ($discount_type == "T")
+                                            <x-general.input type="number" step="0.01" min="0" class="text-right" id="discount" wire:model.lazy="discount" onclick="this.select()" />
+                                        @else
+                                            {{ number_format($discount, 2) }}
+                                        @endif
                                     </td>
                                     <td colspan="1"></td>
                                 </tr>

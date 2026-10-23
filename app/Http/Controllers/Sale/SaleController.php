@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SaleGuide;
 use App\Models\Sale;
 use App\Models\DocumentDetail;
+use App\Models\Document;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Traits\Sale\SaleTrait;
@@ -99,7 +100,20 @@ class SaleController extends Controller
     public function excel(Request $request)
     {
         $lista = $this->search_sales($request->input('date_start'),$request->input('date_end'),$request->input('document_type_id'), $request->input('number'),$request->input('supplier'), $request->input('vendedor'),$request->input('status_sale'), null, 'documents.created_at', 'asc', 1000000);
-        return view("{$this->directory}.excel")->with(compact('lista'));
+
+        //GUIAS DE VENTA (16) Y GUIAS DE REMISION (8) DE CADA VENTA, EN UNA SOLA CONSULTA POR BLOQUE
+        $guides = collect();
+        foreach (array_chunk(collect($lista->items())->pluck('id')->toArray(), 5000) as $sale_ids) {
+            $guides = $guides->merge(
+                Document::whereIn('document_id', $sale_ids)
+                    ->whereIn('document_type_id', [8, 16])
+                    ->orderBy('number', 'asc')
+                    ->get(['document_id', 'document_type_id', 'number', 'status'])
+            );
+        }
+        $guides = $guides->groupBy('document_id');
+
+        return view("{$this->directory}.excel")->with(compact('lista', 'guides'));
     }
 
     public function anularPago(Request $request)

@@ -71,8 +71,10 @@ class AdminComponent extends Component
         $filters = [$this->branch_office_id, $this->date_start, $this->date_end, $this->client, $this->brand_id, $this->product, $this->zone_id];
         $clients = $this->search_product_clients(...array_merge($filters, [$this->rows]));
         $details = $this->search_product_client_details(collect($clients->items())->pluck('client_id')->toArray(), ...$filters);
+        //TOTAL GENERAL POR MARCA DE TODO EL FILTRO (NO SOLO DE LA PAGINA)
+        $brand_totals = $this->search_brand_totals(...$filters);
 
-        return view('livewire.report.product-client.admin-component')->with(compact('clients', 'details', 'arr_actions'));
+        return view('livewire.report.product-client.admin-component')->with(compact('clients', 'details', 'brand_totals', 'arr_actions'));
     }
 
     public function paginationView()

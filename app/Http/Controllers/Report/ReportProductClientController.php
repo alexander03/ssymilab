@@ -57,9 +57,10 @@ class ReportProductClientController extends Controller
         ];
         $clients = $this->search_product_clients(...$filters);
         $details = $this->search_product_client_details($clients->pluck('client_id')->toArray(), ...$filters);
+        $brand_totals = $this->search_brand_totals(...$filters);
         $date_start = $request->input('date_start');
         $date_end = $request->input('date_end');
 
-        return compact('clients', 'details', 'date_start', 'date_end');
+        return compact('clients', 'details', 'brand_totals', 'date_start', 'date_end');
     }
 }

@@ -134,4 +134,91 @@ trait ProductClientTrait
 
         return $result;
     }
+
+    //TOTAL GENERAL POR MARCA Y UNIDAD (TODOS LOS CLIENTES DEL FILTRO)
+    public function search_brand_totals($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+    {
+        return $this->product_client_query($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+            ->select(
+                DB::raw("COALESCE(brands.name, 'SIN MARCA') AS brand_name"),
+                'units.name as unit_name',
+                DB::raw('SUM(document_details.quantity) AS quantity'),
+                DB::raw('SUM(document_details.subtotal) AS amount')
+            )
+            ->groupBy('brands.name', 'units.id', 'units.name')
+            ->orderBy('brand_name', 'asc')
+            ->orderBy('units.name', 'asc')
+            ->get();
+    }
+
+    /**
+     * REPORTE DE VENTAS POR PRODUCTO: AGRUPADO POR MARCA, PRODUCTOS POR UNIDAD
+     */
+
+    //MARCAS CON SU IMPORTE (PAGINADO EN PANTALLA; $rows = null DEVUELVE TODAS)
+    public function search_brand_sales($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id, $rows = null)
+    {
+        $list = $this->product_client_query($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+            ->select(
+                'products.brand_id as brand_id',
+                DB::raw("COALESCE(brands.name, 'SIN MARCA') AS brand_name"),
+                DB::raw('SUM(document_details.subtotal) AS amount')
+            )
+            ->groupBy('products.brand_id', 'brands.name')
+            ->orderBy('brand_name', 'asc')
+            ->orderBy('products.brand_id', 'asc');
+
+        return is_null($rows) ? $list->get() : $list->paginate($rows);
+    }
+
+    //PRODUCTOS POR UNIDAD DE CADA MARCA Y TOTAL DE LA MARCA POR UNIDAD
+    public function search_brand_sale_details($brand_ids, $branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+    {
+        $rows = $this->product_client_query($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+            ->whereIn('products.brand_id', $brand_ids)
+            ->select(
+                'products.brand_id as brand_id',
+                'products.code as product_code',
+                DB::raw("TRIM(CONCAT(products.name, ' ', COALESCE(products.model, ''))) AS product_name"),
+                'units.name as unit_name',
+                DB::raw('SUM(document_details.quantity) AS quantity'),
+                DB::raw('SUM(document_details.subtotal) AS amount')
+            )
+            ->groupBy('products.brand_id', 'products.id', 'products.code', 'products.name', 'products.model', 'units.id', 'units.name')
+            ->orderBy('product_name', 'asc')
+            ->orderBy('units.name', 'asc')
+            ->get();
+
+        $result = [];
+        foreach ($rows as $row) {
+            if(!isset($result[$row->brand_id])){
+                $result[$row->brand_id] = ["products" => [], "units" => []];
+            }
+            $result[$row->brand_id]["products"][] = $row;
+            if(!isset($result[$row->brand_id]["units"][$row->unit_name])){
+                $result[$row->brand_id]["units"][$row->unit_name] = (object) ["unit_name" => $row->unit_name, "quantity" => 0, "amount" => 0];
+            }
+            $result[$row->brand_id]["units"][$row->unit_name]->quantity += $row->quantity;
+            $result[$row->brand_id]["units"][$row->unit_name]->amount += $row->amount;
+        }
+        foreach ($result as $key => $data) {
+            ksort($result[$key]["units"]);
+        }
+
+        return $result;
+    }
+
+    //TOTAL GENERAL POR UNIDAD (TODAS LAS MARCAS DEL FILTRO)
+    public function search_sales_total_by_unit($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+    {
+        return $this->product_client_query($branch_office_id, $date_start, $date_end, $client, $brand_id, $product, $zone_id)
+            ->select(
+                'units.name as unit_name',
+                DB::raw('SUM(document_details.quantity) AS quantity'),
+                DB::raw('SUM(document_details.subtotal) AS amount')
+            )
+            ->groupBy('units.id', 'units.name')
+            ->orderBy('units.name', 'asc')
+            ->get();
+    }
 }

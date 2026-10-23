@@ -23,6 +23,7 @@ use App\Http\Controllers\Report\ReportProductSerieController;
 use App\Http\Controllers\Report\ReportPurchaseController;
 use App\Http\Controllers\Report\ReportProductSupplierController;
 use App\Http\Controllers\Report\ReportProductClientController;
+use App\Http\Controllers\Report\ReportProductSaleController;
 use App\Http\Controllers\Report\ReportSupplierController;
 use App\Http\Controllers\Report\ReportRequirementController;
 use App\Http\Controllers\Report\ReportExchangeController;
@@ -275,6 +276,7 @@ Route::group([
         'show' => 'show-purchase',
     ]);
     Route::get('user-purchase/{purchase}/pdf-purchase', [PurchaseController::class, 'pdf'])->name('pdf-purchase');
+    Route::get('user-purchase/{id}/file', [PurchaseController::class, 'download_file'])->name('purchase-file');
     Route::get('user-purchase/excel-purchase', [PurchaseController::class, 'excel'])->name('excel-purchase');
 
     Route::resource('debts-to-pay', InstallmentController::class)->only(['index'])->names([
@@ -461,6 +463,7 @@ Route::group([
         'index' => 'report-purchase',
     ]);
     Route::get('user-pdf-report-purchase/pdf', [ReportPurchaseController::class, 'pdf'])->name('report-pdf-purchase');
+    Route::get('user-excel-report-purchase/excel', [ReportPurchaseController::class, 'excel'])->name('report-excel-purchase');
 
     Route::resource('report-product-supplier', ReportProductSupplierController::class)->only(['index'])->names([
         'index' => 'report-product-supplier',
@@ -474,6 +477,12 @@ Route::group([
     ]);
     Route::get('report-product-client/pdf', [ReportProductClientController::class, 'pdf'])->name('report-pdf-product-client');
     Route::get('report-product-client/excel', [ReportProductClientController::class, 'excel'])->name('report-excel-product-client');
+
+    Route::resource('report-product-sale', ReportProductSaleController::class)->only(['index'])->names([
+        'index' => 'report-product-sale',
+    ]);
+    Route::get('report-product-sale/pdf', [ReportProductSaleController::class, 'pdf'])->name('report-pdf-product-sale');
+    Route::get('report-product-sale/excel', [ReportProductSaleController::class, 'excel'])->name('report-excel-product-sale');
 
     Route::resource('report-supplier', ReportSupplierController::class)->only(['index'])->names([
         'index' => 'report-supplier',

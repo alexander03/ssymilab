@@ -37,6 +37,14 @@
                         wire:model.defer="supplier" wire:keydown.enter="$refresh"/>
                 </div>
                 <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
+                    <label for="origin" class="font-semibold text-gray-600">Tipo: </label>
+                    <x-general.select id="origin" name="origin" wire:model.defer="origin" wire:change="$refresh">
+                        <option value="">TODOS</option>
+                        <option value="N">NACIONAL</option>
+                        <option value="E">EXTRANJERO</option>
+                    </x-general.select>
+                </div>
+                <div class="mb-3 space-y-1 w-full text-xs col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-3 xl:col-span-2">
                     <label for="rows" class="font-semibold text-gray-600">Filas a Mostrar: </label>
                     <x-general.select id="rows" name="rows" wire:model.defer="rows" wire:change="$refresh">
                         <option value="10">10</option>
@@ -50,8 +58,11 @@
 
     <x-general.card-table>
         <x-slot name="head">
-            <button class="items-center px-3 py-2 border border-transparent rounded-md font-semibold text-xs uppercase tracking-widest focus:outline-none focus:ring active:bg-gray-900 focus:border-gray-900 focus:ring-gray-300  disabled:opacity-25 transition bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 rounded-md mr-2" onclick="window.open('{{ route('report-pdf-purchase', ['date_start' => $this->date_start,'date_end' => $this->date_end, 'supplier' => $this->supplier, 'branch_office_id' => $this->branch_office_id]) }}','_blank');">
+            <button class="items-center px-3 py-2 border border-transparent rounded-md font-semibold text-xs uppercase tracking-widest focus:outline-none focus:ring active:bg-gray-900 focus:border-gray-900 focus:ring-gray-300  disabled:opacity-25 transition bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 rounded-md mr-2" onclick="window.open('{{ route('report-pdf-purchase', ['date_start' => $this->date_start,'date_end' => $this->date_end, 'supplier' => $this->supplier, 'branch_office_id' => $this->branch_office_id, 'origin' => $this->origin]) }}','_blank');">
                     <i class="fas fa-file-pdf" aria-hidden="true"></i> {{ __(' PDF') }}
+                </button>
+            <button class="items-center px-3 py-2 border border-transparent rounded-md font-semibold text-xs uppercase tracking-widest focus:outline-none focus:ring active:bg-gray-900 focus:border-gray-900 focus:ring-gray-300  disabled:opacity-25 transition bg-green-600 text-white hover:bg-green-700 active:bg-green-800 rounded-md mr-2" onclick="window.open('{{ route('report-excel-purchase', ['date_start' => $this->date_start,'date_end' => $this->date_end, 'supplier' => $this->supplier, 'branch_office_id' => $this->branch_office_id, 'origin' => $this->origin]) }}','_blank');">
+                    <i class="fas fa-file-excel" aria-hidden="true"></i> {{ __(' EXCEL') }}
                 </button>
         </x-slot>
         <x-slot name="body">

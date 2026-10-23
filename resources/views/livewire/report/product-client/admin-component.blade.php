@@ -154,6 +154,36 @@
                             {{ $clients->onEachSide(0)->links() }}
                         </div>
                     @endif
+                    {{-- TOTAL GENERAL POR MARCA DE TODO EL FILTRO (NO SOLO DE LA PAGINA) --}}
+                    <div class="rounded shadow mb-4 bg-white">
+                        <div class="px-4 py-2 bg-blue-900 text-white text-sm font-bold">TOTAL GENERAL POR MARCA</div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Marca</th>
+                                    <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">Unidad</th>
+                                    <th class="px-3 py-2 text-right text-xs font-bold text-gray-700 uppercase">Cantidad</th>
+                                    <th class="px-3 py-2 text-right text-xs font-bold text-gray-700 uppercase">Importe (S/)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @php $general_amount = 0; @endphp
+                                @foreach ($brand_totals as $brand)
+                                    @php $general_amount += $brand->amount; @endphp
+                                    <tr>
+                                        <td class="px-3 py-2 text-left text-xs text-gray-700 font-bold">{{ $brand->brand_name }}</td>
+                                        <td class="px-3 py-2 text-center text-xs text-gray-700">{{ $brand->unit_name }}</td>
+                                        <td class="px-3 py-2 text-right text-xs text-gray-700">{{ number_format($brand->quantity, 2) }}</td>
+                                        <td class="px-3 py-2 text-right text-xs text-gray-700">{{ number_format($brand->amount, 2) }}</td>
+                                    </tr>
+                                @endforeach
+                                <tr class="bg-gray-200">
+                                    <td colspan="3" class="px-3 py-2 text-right text-sm text-gray-800 font-bold">IMPORTE TOTAL (S/)</td>
+                                    <td class="px-3 py-2 text-right text-sm text-gray-800 font-bold">{{ number_format($general_amount, 2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
         </x-slot>

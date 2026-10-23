@@ -81,7 +81,8 @@ trait PersonTrait {
         ->orderBy('departments.name', 'ASC')
         ->orderBy('provinces.name', 'ASC')
         ->orderBy('districts.name', 'ASC')
-        ->select('districts.code','provinces.name as province_name','departments.name as department_name','districts.name as district_name')->limit(10)->get();
+        //MAXIMO 30 COINCIDENCIAS (LA LISTA MUESTRA 10 Y EL RESTO CON SCROLL)
+        ->select('districts.code','provinces.name as province_name','departments.name as department_name','districts.name as district_name')->limit(30)->get();
 
         return $people->map(function($person){
             return [

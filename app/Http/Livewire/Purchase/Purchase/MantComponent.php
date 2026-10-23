@@ -77,8 +77,9 @@ class MantComponent extends Component
 
     public function updatedImage()
     {
+        //ARCHIVO ADJUNTO: IMAGEN O PDF
         $this->validate([
-            'image' => 'nullable|image',
+            'image' => 'nullable|mimes:jpg,jpeg,png,gif,bmp,webp,pdf',
         ]);
     }
 

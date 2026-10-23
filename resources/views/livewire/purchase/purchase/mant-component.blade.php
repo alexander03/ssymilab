@@ -348,7 +348,11 @@
                 @if ($imageUploaded)
                     <div class="col-span-1">
                         Previsualizacion:
-                        <img src="{{ route('purchase-file', ["id" => $purchase->id]) }}" height="100px">
+                        @if (str_contains($purchase->getFirstMedia('images')->mime_type, 'pdf'))
+                            <a href="{{ route('purchase-file', ["id" => $purchase->id]) }}" class="text-blue-600 hover:underline"><i class="fas fa-file-pdf mr-1"></i>{{ $purchase->getFirstMedia('images')->file_name }}</a>
+                        @else
+                            <img src="{{ route('purchase-file', ["id" => $purchase->id]) }}" height="100px">
+                        @endif
                     </div>
                     <div class="p-2 col-span-1">
                         <x-general.button class="bg-red-400 text-white hover:bg-red-600 active:bg-red-700 my-4" onclick="clearImageUploaded()">
@@ -372,12 +376,12 @@
                     @else
                     <div class="p-2 col-span-1 md:col-span-2">
                     @endif
-                        <label for="image" class="font-semibold text-gray-600">Imagen: </label>
-                        <x-general.input type="file" id="image" wire:model="image" accept="image/*" />
+                        <label for="image" class="font-semibold text-gray-600">Archivo (imagen o PDF): </label>
+                        <x-general.input type="file" id="image" wire:model="image" accept="image/*,application/pdf" />
                         <x-jet-input-error for="image" />
                         @error('image') <script>clearImage();</script> @enderror
                     </div>
-                    @if ($image && str_contains($image->getMimeType(), 'image') )
+                    @if ($image && (str_contains($image->getMimeType(), 'image') || str_contains($image->getMimeType(), 'pdf')))
                     <div class="p-2 col-span-1 mt-3">
                         <x-general.button class="bg-red-400 text-white hover:bg-red-600 active:bg-red-700 my-4" onclick="clearImage()">
                             <i class="fas fa-trash mr-2" aria-hidden="true"></i> {{ __(' Eliminar') }}

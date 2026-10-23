@@ -184,7 +184,7 @@
                                         />
                                 </div>
                                 <div x-show="open" class="col-span-1 pr-2 pt-0 relative w-full">
-                                    <ul class="absolute bg-gray-100 shadow-md max-w-full right-2 left-0 z-50">
+                                    <ul class="absolute bg-gray-100 shadow-md max-w-full right-2 left-0 z-50" style="max-height: 400px; overflow-y: auto;">
                                         @foreach ($search_list_district as $person)
                                             <li wire:click="select_active_start('{{ $person["code"] }}')" class="py-2 px-2 hover:bg-blue-100 cursor-pointer">{{ $person["name_complete"]}}</li>
                                         @endforeach
@@ -217,7 +217,7 @@
                                         />
                                 </div>
                                 <div x-show="open" class="col-span-1 pr-2 pt-0 relative w-full">
-                                    <ul class="absolute bg-gray-100 shadow-md max-w-full right-2 left-0 z-50">
+                                    <ul class="absolute bg-gray-100 shadow-md max-w-full right-2 left-0 z-50" style="max-height: 400px; overflow-y: auto;">
                                         @foreach ($search_list_district2 as $person)
                                             <li wire:click="select_active_arrival('{{ $person["code"] }}')" class="py-2 px-2 hover:bg-blue-100 cursor-pointer">{{ $person["name_complete"]}}</li>
                                         @endforeach

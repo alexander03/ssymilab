@@ -225,22 +225,29 @@ class ProformaController extends Controller
         $pdf::SetFont('helvetica','B',8);
         $alto=8;
         $agregar = 15;
+        //DESCUENTO POR ITEM: COLUMNA "DSCTO %" DE 12 MM QUE SE QUITA A LA DESCRIPCION
+        $proforma_detail = ($proforma->detail && trim($proforma->detail) != "") ? json_decode($proforma->detail, true) : [];
+        $item_discount = (array_key_exists('discount_type', $proforma_detail) && $proforma_detail["discount_type"] == "I");
+        $dw = $item_discount ? 12 : 0;
         if(!is_null($proforma->details[0]->product) && $proforma->details[0]->product->type=='R'){
             $pdf::Cell(15, $alto, utf8_decode("CODIGO"), 1, 0, "C", true);
-            $pdf::Cell(66, $alto, utf8_decode("DESCRIPCION"), 1, 0, "C", true);
+            $pdf::Cell(66-$dw, $alto, utf8_decode("DESCRIPCION"), 1, 0, "C", true);
             $pdf::Cell(15, $alto, utf8_decode("F.V."), 1, 0, "C", true);
         }else{
             $pdf::Cell(20, $alto, utf8_decode("CODIGO"), 1, 0, "C", true);
-            $pdf::Cell(76, $alto, utf8_decode("DESCRIPCION"), 1, 0, "C", true);
+            $pdf::Cell(76-$dw, $alto, utf8_decode("DESCRIPCION"), 1, 0, "C", true);
         }
         $y = $pdf::GetY();
         $pdf::Multicell(20, $alto, utf8_decode("PLAZO DE ENTREGA"), 1, "C", true);
-        $pdf::SetXY(116+$agregar,$y);
+        $pdf::SetXY(116+$agregar-$dw,$y);
         $pdf::Cell(15, $alto, utf8_decode("CANT."), 1, 0, "C", true);
         $pdf::Cell(17, $alto, utf8_decode("U.M."), 1, 0, "C", true);
         $y = $pdf::GetY();
         $pdf::Multicell(17, $alto, utf8_decode("PRECIO UNITARIO"), 1, "C", true);
-        $pdf::SetXY(165+$agregar,$y);
+        $pdf::SetXY(165+$agregar-$dw,$y);
+        if($item_discount){
+            $pdf::Cell(12, $alto, utf8_decode("DSCTO %"), 1, 0, "C", true);
+        }
         $y = $pdf::GetY();
         $pdf::Multicell(20, $alto, utf8_decode("PRECIO TOTAL"), 1, "C", true);
         $pdf::SetXY(182+$agregar,$y);
@@ -263,25 +270,29 @@ class ProformaController extends Controller
                 $productosRectY = $pdf::GetY();
                 $productosRectHeight = -7;
             }
-            $alto2 = $pdf::getNumLines(($item->product->name.' '.$item->product->presentation."\n MARCA: ".$item->product->brand->name) , 66);
+            $percent = ($item_discount && array_key_exists('descuento', $details)) ? (float) $details["descuento"] : 0;
+            $alto2 = $pdf::getNumLines(($item->product->name.' '.$item->product->presentation."\n MARCA: ".$item->product->brand->name) , 66-$dw);
             $pdf::SetXY(15, $pdf::GetY());
             if($proforma->details[0]->product->type=='R'){
                 $pdf::Cell(15, $alto2, $item->product->code, $borde2, 0, "C");
                 $y=$pdf::GetY();
-                $pdf::MultiCell(66, $alto, $item->product->name.' '.$item->product->presentation."\n MARCA: ".$item->product->brand->name, $borde2, "L");
-                $pdf::SetXY(96,$y);
+                $pdf::MultiCell(66-$dw, $alto, $item->product->name.' '.$item->product->presentation."\n MARCA: ".$item->product->brand->name, $borde2, "L");
+                $pdf::SetXY(96-$dw,$y);
                 $pdf::Cell(15, $alto2, $fv, $borde2, 0, "C");
             }else{
                 $pdf::Cell(20, $alto2, $item->product->code, $borde2, 0, "C");
                 $y=$pdf::GetY();
-                $pdf::MultiCell(76, $alto, $item->product->name.' '.$item->product->presentation."\n MARCA: ".$item->product->brand->name, $borde2, "L");
-                $pdf::SetXY(111,$y);
+                $pdf::MultiCell(76-$dw, $alto, $item->product->name.' '.$item->product->presentation."\n MARCA: ".$item->product->brand->name, $borde2, "L");
+                $pdf::SetXY(111-$dw,$y);
             }
             $pdf::Cell(20, $alto2, $plazo, $borde2, 0, "C");
             $pdf::Cell(15, $alto2, sprintf('%g', $item->quantity), $borde2, 0, "C");
             $pdf::Cell(17, $alto2, $item->unit->name, $borde2, 0, "C");
             $pdf::Cell(17, $alto2, number_format($item->sell_price,2), $borde2, 0, "C");
-            $pdf::Cell(20, $alto2, $proforma->currency->symbol .' '. number_format($item->sell_price * $item->quantity,2), $borde2, 0, "C");
+            if($item_discount){
+                $pdf::Cell(12, $alto2, sprintf('%g', $percent)."%", $borde2, 0, "C");
+            }
+            $pdf::Cell(20, $alto2, $proforma->currency->symbol .' '. number_format($item->sell_price * $item->quantity * (1 - $percent/100),2), $borde2, 0, "C");
             $pdf::SetXY(15, $pdf::GetY()+($alto2-0.4)*5);
             $productosRectHeight += ($alto2-0.4)*5;
             $total = $total + $item->sell_price * $item->quantity;

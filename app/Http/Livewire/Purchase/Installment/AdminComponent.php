@@ -94,6 +94,7 @@ class AdminComponent extends Component
         $thead[]       = array('value' => 'Proveedor', 'colspan' => '1', 'link' => 'supplier_document');
         $thead[]       = array('value' => 'Cuota', 'colspan' => '1', 'link' => 'document_payments.name');
         $thead[]       = array('value' => 'Monto', 'colspan' => '1', 'link' => 'document_payments.total_amount');
+        $thead[]       = array('value' => 'Monto Pendiente', 'colspan' => '1', 'link' => null);
         $thead[]       = array('value' => 'Fecha', 'colspan' => '1', 'link' => '');
         $thead[]       = array('value' => 'Fecha de pago', 'colspan' => '1', 'link' => '');
         $thead[]       = array('value' => 'Estado', 'colspan' => '1', 'link' => null);

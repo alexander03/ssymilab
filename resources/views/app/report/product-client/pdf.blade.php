@@ -91,8 +91,31 @@
                     <th style="text-align: right;">{{ number_format($client_item->amount, 2, '.', '') }}</th>
                 </tr>
             @endforeach
+        </tbody>
+    </table>
+
+    {{-- TOTAL GENERAL POR MARCA (SUMA DE TODOS LOS CLIENTES) --}}
+    <p style="font-weight: 700; margin-top: 15px; margin-bottom: 0px;">TOTAL GENERAL POR MARCA</p>
+    <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 10px;">
+        <thead>
             <tr>
-                <th colspan="5" style="text-align: right;">TOTAL GENERAL</th>
+                <th> MARCA </th>
+                <th> UNIDAD </th>
+                <th> CANTIDAD </th>
+                <th> IMPORTE (S/) </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($brand_totals as $brand)
+                <tr>
+                    <td style="font-weight: bold;">{{ $brand->brand_name }}</td>
+                    <td align="center">{{ $brand->unit_name }}</td>
+                    <td align="right">{{ number_format($brand->quantity, 2, '.', '') }}</td>
+                    <td align="right">{{ number_format($brand->amount, 2, '.', '') }}</td>
+                </tr>
+            @endforeach
+            <tr>
+                <th colspan="3" style="text-align: right;">TOTAL GENERAL</th>
                 <th style="text-align: right;">{{ number_format($total_amount, 2, '.', '') }}</th>
             </tr>
         </tbody>

@@ -126,7 +126,7 @@
                                                 $payments_per_item = $item->payments;
                                             @endphp
                                             @foreach ($payments_per_item as $payment)
-                                                <div><span class="font-bold">{{ $payment->method_name }}:</span> {{ number_format($payment->amount, 2) }}</div>
+                                                <div><span class="font-bold">{{ $payment->method_name }}:</span> {{ number_format($payment->amount, 2) }}@if (trim($payment->operation_number) != "") | <span class="font-bold">VOUCHER:</span> {{ $payment->operation_number }}@endif</div>
                                             @endforeach
                                         </td>
                                     </tr>

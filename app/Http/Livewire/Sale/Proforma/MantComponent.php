@@ -32,6 +32,11 @@ class MantComponent extends Component
     public $client_id, $currency_id, $number, $date_time, $total, $comment;
     public $subtotal = 0;
     public $discount = 0;
+    //DESCUENTO: "T" = TOTAL (MONTO GLOBAL), "I" = POR ITEM (% ENTERO POR LINEA); SOLO UNO A LA VEZ
+    public $discount_type = "T";
+    //FORMA DE PAGO: "C" CONTADO, "D" CREDITO
+    public $type = "C";
+    public $allowed_payment_types = ['C', 'D'];
 
     public $branch_office;
     public $supplier;
@@ -73,9 +78,11 @@ class MantComponent extends Component
             $this->currency_id = $this->proforma->currency_id;
             $this->total = $this->proforma->total;
             $this->discount = $this->proforma->discount ? $this->proforma->discount + 0 : 0;
+            $this->type = in_array($this->proforma->type, ['C', 'D']) ? $this->proforma->type : "C";
             $this->comment = (array_key_exists('comment', $details)) ? $details["comment"] : "";
             $this->validez = (array_key_exists('validez', $details)) ? $details["validez"] : "";
             $this->condicion = (array_key_exists('condicion', $details)) ? $details["condicion"] : "";
+            $this->discount_type = (array_key_exists('discount_type', $details) && $details["discount_type"] == "I") ? "I" : "T";
             $this->number = $this->proforma->number;
             $this->date_time = date_format(new \DateTime($this->proforma->date_time), 'Y-m-d');
 
@@ -107,7 +114,8 @@ class MantComponent extends Component
                         "due_date" => (array_key_exists('due_date', $details)) ? $details["due_date"] : "",
                         "quantity" => sprintf('%g', $value["quantity"]),
                         "sell_price" => sprintf('%g', $value["sell_price"]),
-                        "sell_price_min" => sprintf('%g', $value["sell_price"])
+                        "sell_price_min" => sprintf('%g', $value["sell_price"]),
+                        "discount_percent" => (array_key_exists('descuento', $details)) ? $details["descuento"] : 0
                     ];
                 }
             }
@@ -148,10 +156,32 @@ class MantComponent extends Component
     {
         $this->load_actions();
         $arr_actions = $this->arr_actions;
+        $this->sync_payment_types();
 
         $person = new Person();
         $role_id = Role::where('code', 'P')->first()->id;
         return view('livewire.sale.proforma.mant-component')->with(compact('person', 'role_id', 'arr_actions'));
+    }
+
+    //FORMAS DE PAGO PERMITIDAS SEGUN EL CLIENTE SELECCIONADO (SIN CLIENTE = AMBAS)
+    private function sync_payment_types(){
+        $client = (isset($this->supplier["id"]) && $this->supplier["id"] != "") ? Person::find($this->supplier["id"]) : null;
+        $this->allowed_payment_types = $client ? $client->getAllowedPaymentTypes() : ['C', 'D'];
+        if(!in_array($this->type, $this->allowed_payment_types)){
+            $this->type = $this->allowed_payment_types[0];
+        }
+    }
+
+    private function validate_payment_type(){
+        $client = (isset($this->supplier["id"]) && $this->supplier["id"] != "") ? Person::find($this->supplier["id"]) : null;
+        if($client && !in_array($this->type, $client->getAllowedPaymentTypes())){
+            $this->emit('alert-error', [
+                'title' => 'Error!',
+                'text' => 'La forma de pago no está permitida para este cliente.',
+            ]);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -231,14 +261,49 @@ class MantComponent extends Component
     private function calculate_total()
     {
         $subtotal = 0;
+        $total = 0;
         foreach ($this->shopping_car as $key => $value) {
-            $subtotal = $subtotal + $value["quantity"] * $value["sell_price"];
+            $percent = $this->item_discount_percent($key);
+            $line = $value["quantity"] * $value["sell_price"];
+            $subtotal = $subtotal + $line;
+            $total = $total + $line * (1 - $percent / 100);
         }
-        if(!is_numeric($this->discount) || $this->discount < 0){
-            $this->discount = 0;
+        if($this->discount_type == "T"){
+            if(!is_numeric($this->discount) || $this->discount < 0){
+                $this->discount = 0;
+            }
+            $total = $subtotal - $this->discount;
+        }else{
+            //POR ITEM: EL DESCUENTO ES LA SUMA DE LOS DESCUENTOS DE CADA LINEA
+            $this->discount = $subtotal - $total;
         }
         $this->subtotal = $subtotal;
-        $this->total = $subtotal - $this->discount;
+        $this->total = $total;
+    }
+
+    //% DE DESCUENTO DE LA LINEA (ENTERO DE 0 A 100); SOLO APLICA EN MODO POR ITEM
+    private function item_discount_percent($key)
+    {
+        $percent = $this->shopping_car[$key]["discount_percent"] ?? 0;
+        if(!is_numeric($percent) || $percent < 0 || $percent > 100 || $this->discount_type != "I"){
+            $percent = 0;
+        }
+        $percent = (int) round($percent);
+        $this->shopping_car[$key]["discount_percent"] = $percent;
+        return $percent;
+    }
+
+    public function updatedDiscountType()
+    {
+        if($this->discount_type == "I"){
+            $this->discount = 0;
+        }else{
+            foreach ($this->shopping_car as $key => $value) {
+                $this->shopping_car[$key]["discount_percent"] = 0;
+            }
+            $this->discount = 0;
+        }
+        $this->calculate_total();
     }
 
     private function validate_discount()
@@ -419,6 +484,9 @@ class MantComponent extends Component
         //     $form_request->validationAttributes(),
         // )->validate();
         $this->calculate_total();
+        if(!$this->validate_payment_type()){
+            return true;
+        }
         if(!$this->validate_discount()){
             return true;
         }
@@ -430,6 +498,7 @@ class MantComponent extends Component
                 $detail = [
                     "due_date" => $item["due_date"],
                     "delivery_time" => $item["delivery_time"],
+                    "descuento" => $item["discount_percent"] ?? 0,
                 ];
                 $input_detail = [
                     'document_id' => $document->id,
@@ -467,6 +536,9 @@ class MantComponent extends Component
     public function update($comment){
         $this->comment = $comment;
         $this->calculate_total();
+        if(!$this->validate_payment_type()){
+            return true;
+        }
         if(!$this->validate_discount()){
             return true;
         }
@@ -482,6 +554,7 @@ class MantComponent extends Component
                 $detail = [
                     "due_date" => $item["due_date"],
                     "delivery_time" => $item["delivery_time"],
+                    "descuento" => $item["discount_percent"] ?? 0,
                 ];
                 $input_detail = [
                     'document_id' => $this->proforma->id,
@@ -524,10 +597,11 @@ class MantComponent extends Component
         $detail = [
             "comment" => $this->comment ? $this->comment : "",
             "validez" => $this->validez ? $this->validez : "",
-            "condicion" => $this->condicion ? $this->condicion : ""
+            "condicion" => $this->condicion ? $this->condicion : "",
+            "discount_type" => $this->discount_type
         ];
         return [
-            "type" => "C",
+            "type" => $this->type,
             'client_id' => $this->supplier["id"],
             'user_id' => Auth::user()->id,
             "currency_id" => $this->currency_id,
@@ -546,10 +620,11 @@ class MantComponent extends Component
         $detail = [
             "comment" => $this->comment ? $this->comment : "",
             "validez" => $this->validez ? $this->validez : "",
-            "condicion" => $this->condicion ? $this->condicion : ""
+            "condicion" => $this->condicion ? $this->condicion : "",
+            "discount_type" => $this->discount_type
         ];
         return [
-            "type" => "C",
+            "type" => $this->type,
             'client_id' => $this->supplier["id"],
             'user_id' => Auth::user()->id,
             'branch_office_id' => Auth::user()->branch_office_id,
