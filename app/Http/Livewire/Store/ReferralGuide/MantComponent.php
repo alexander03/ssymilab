@@ -390,7 +390,9 @@ class MantComponent extends Component
             $product_serie = ProductSerie::where('serie', $this->product_serie)
                 ->where('product_id', $this->shopping_car[$this->document_detail_key]["product_id"])
                 ->where('branch_office_id', $this->branch_office["id"])
-                ->where('status', '<>', 'A')->first();
+                ->where('status', '<>', 'A')
+                ->where('status', '<>', 'S')
+                ->first();
 
             if(false){
                 if($product_serie && $product_serie->status != "S" && $product_serie->status != "V"){

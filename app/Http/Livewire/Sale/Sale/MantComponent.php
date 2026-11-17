@@ -1516,7 +1516,9 @@ class MantComponent extends Component
             $product_serie = ProductSerie::where('serie','like', '%'.$this->search_serie.'%')
                 ->where('product_id', $this->shopping_car[$this->document_detail_key]["product_id"])
                 ->where('branch_office_id', $this->branch_office["id"])
-                ->where('status', '<>', 'A')->get();
+                ->where('status', '<>', 'S')
+                ->where('status', '<>', 'A')
+                ->get();
             $list = $product_serie->map(function($serie){
                         return [
                             "id" => $serie->id,
